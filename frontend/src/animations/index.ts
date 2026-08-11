@@ -1,4 +1,4 @@
-import { Variants } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 
 /** Standard ease curve used across all ARGES animations */
 export const EASE = [0.16, 1, 0.3, 1] as const;

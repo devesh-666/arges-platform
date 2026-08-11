@@ -1,508 +1,414 @@
-import { motion } from 'framer-motion';
-import { DashboardLayout } from '../components/DashboardLayout';
-import type { NavSection } from '../components/DashboardLayout';
-import { StatCard } from '../components/GlassPanel';
-import { Badge } from '../components/Badge';
-import { UserAvatar } from '../components/UserAvatar';
-import { fadeUp, stagger, scaleIn, EASE } from '../animations';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const SECTIONS: NavSection[] = [
-  {
-    items: [
-      { page: 'dashboard', label: 'Dashboard', icon: 'M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z' },
-      { page: 'requests', label: 'Help Requests', icon: 'M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z', badge: '3', badgeColor: 'red' },
-      { page: 'history', label: 'Session History', icon: 'M12 8v4l3 3 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z' },
-      { page: 'map', label: 'Request Map', icon: 'M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7 M9 20l6-3 M9 20V7 M15 17l5.553 2.776A1 1 0 0 0 22 18.882V8.118a1 1 0 0 0-.553-.894L15 4 M15 17V4' },
-    ],
-  },
-  {
-    title: 'Growth',
-    items: [
-      { page: 'reputation', label: 'Reputation', icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' },
-      { page: 'security', label: 'Security', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', badge: 'Verified', badgeColor: 'green' },
-      { page: 'settings', label: 'Settings', icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' },
-    ],
-  },
-];
+type Page = 'overview' | 'requests' | 'history' | 'map' | 'reputation' | 'security' | 'settings';
 
-interface HelpRequest {
-  initials: string;
-  name: string;
-  city: string;
-  message: string;
-  urgent: boolean;
-  time: string;
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+};
+
+const stagger = {
+  animate: { transition: { staggerChildren: 0.06 } },
+};
+
+const item = {
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+};
+
+function ArgLogo() {
+  return (
+    <svg viewBox="0 0 100 100">
+      <path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z" stroke="#AB47BC" strokeWidth="3" fill="none" />
+      <circle cx="50" cy="50" r="9" stroke="#AB47BC" strokeWidth="3" fill="none" />
+      <circle cx="50" cy="50" r="3.5" fill="#AB47BC" />
+    </svg>
+  );
 }
-
-const REQUESTS: HelpRequest[] = [
-  {
-    initials: 'AR',
-    name: 'Anjali Rao',
-    city: 'Mysuru',
-    message: "I'm at a bus stop and can't read the bus number",
-    urgent: true,
-    time: 'just now',
-  },
-  {
-    initials: 'MK',
-    name: 'Mohammed K',
-    city: 'Hyderabad',
-    message: 'I need help finding the right platform',
-    urgent: false,
-    time: '1 min ago',
-  },
-  {
-    initials: 'SR',
-    name: 'Sneha R',
-    city: 'Chennai',
-    message: "There's a sign here I can't read",
-    urgent: false,
-    time: '2 min ago',
-  },
-];
 
 export function HelperDashboard() {
-  return (
-    <DashboardLayout
-      themeClass="theme-helper"
-      roleLabel="Echo Helper · Verified"
-      userName="Vikram Singh"
-      userInitials="VS"
-      userRole="Echo Helper · Verified"
-      avatarType="helper"
-      sections={SECTIONS}
-    >
-      {(page) => {
-        if (page === 'dashboard') return <Dashboard />;
-        if (page === 'requests') return <Requests />;
-        if (page === 'history') return <SessionHistory />;
-        if (page === 'map') return <RequestMap />;
-        if (page === 'reputation') return <Reputation />;
-        if (page === 'security') return <Security />;
-        if (page === 'settings') return <Settings />;
-        return <div className="p-6 glass rounded-3xl"><p className="text-[#8B8B9A]">Coming in full build</p></div>;
-      }}
-    </DashboardLayout>
-  );
-}
+  const [page, setPage] = useState<Page>('overview');
 
-function PageHeader({ title, subtitle, right }: { title: string; subtitle: string; right?: React.ReactNode }) {
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div>
-        <h1 className="font-display font-bold text-2xl">{title}</h1>
-        <p className="text-sm text-[#8B8B9A] mt-0.5">{subtitle}</p>
+    <div className="theme-helper min-h-screen">
+      <div className="cursor-dot" />
+      <div className="cursor-ring" />
+      <div className="app">
+        <Sidebar page={page} setPage={setPage} />
+        <main className="main">
+          <AnimatePresence mode="wait">
+            <motion.div key={page} {...fadeUp}>
+              {page === 'overview' && <Overview setPage={setPage} />}
+              {page === 'requests' && <Requests />}
+              {page === 'history' && <History />}
+              {page === 'map' && <RequestMap />}
+              {page === 'reputation' && <Reputation />}
+              {page === 'security' && <Security />}
+              {page === 'settings' && <Settings />}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
-      {right}
     </div>
   );
 }
 
-function Dashboard() {
+/* ============================ SIDEBAR ============================ */
+function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+  const nav: { section?: string; items: { page: Page; label: string; icon: string; badge?: string; badgeColor?: 'green' | 'red' }[] }[] = [
+    {
+      items: [
+        { page: 'overview', label: 'Dashboard', icon: 'M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z' },
+        { page: 'requests', label: 'Help Requests', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z', badge: '3', badgeColor: 'red' },
+        { page: 'history', label: 'Session History', icon: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2' },
+        { page: 'map', label: 'Request Map', icon: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6z' },
+      ],
+    },
+    {
+      section: 'Your Profile',
+      items: [
+        { page: 'reputation', label: 'Reputation', icon: 'M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' },
+        { page: 'security', label: 'Security', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', badge: '2FA', badgeColor: 'green' },
+        { page: 'settings', label: 'Settings', icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' },
+      ],
+    },
+  ];
+
   return (
-    <div>
-      <PageHeader
-        title="Helper Dashboard"
-        subtitle="Welcome back, Vikram · You're ranked #1 this week"
-        right={<Badge variant="purple" dot>Online</Badge>}
-      />
+    <aside className="sidebar">
+      <a href="#" className="sidebar-logo">
+        <ArgLogo />
+        ARGES
+      </a>
+      <div className="sidebar-role">Echo Helper · Verified</div>
 
-      <motion.div
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-      >
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>}
-          value="284"
-          label="People Helped"
-          accent="purple"
-        />
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>}
-          value="4.9"
-          label="Avg Rating"
-          accent="green"
-        />
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>}
-          value="2.4s"
-          label="Avg Response"
-          accent="blue"
-        />
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></svg>}
-          value="#1"
-          label="Top Helper"
-          accent="orange"
-        />
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="glass specular p-6 rounded-3xl"
-        >
-          <div className="flex justify-between items-center mb-5">
-            <div>
-              <div className="font-display font-semibold text-lg">Incoming Requests</div>
-              <div className="text-xs text-[#8B8B9A]">3 people need help right now</div>
+      {nav.map((sec, i) => (
+        <div key={i}>
+          {sec.section && <div className="nav-section-title">{sec.section}</div>}
+          {sec.items.map((n) => (
+            <div key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)}>
+              <svg viewBox="0 0 24 24"><path d={n.icon} /></svg>
+              {n.label}
+              {n.badge && <span className={`nav-badge${n.badgeColor ? ' ' + n.badgeColor : ''}`}>{n.badge}</span>}
             </div>
-            <Badge variant="red" dot>3 waiting</Badge>
-          </div>
-          <div className="space-y-3">
-            {REQUESTS.map((req) => (
-              <RequestRow key={req.name} req={req} />
-            ))}
-          </div>
-        </motion.div>
+          ))}
+        </div>
+      ))}
 
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="glass specular p-6 rounded-3xl"
-        >
-          <div className="font-display font-semibold text-lg mb-4">Today's Impact</div>
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            {[
-              ['7', 'Sessions', 'purple'],
-              ['42m', 'Time Given', 'blue'],
-              ['5.0', 'Avg Score', 'green'],
-              ['100%', 'Accept Rate', 'orange'],
-            ].map(([val, lbl, color]) => (
-              <div key={lbl} className="p-4 rounded-2xl glass">
-                <div className="font-display font-bold text-xl" style={{ color: `#${color === 'green' ? '4CAF50' : color === 'purple' ? 'AB47BC' : color === 'blue' ? '42A5F5' : 'FF6B1A'}` }}>{val}</div>
-                <div className="text-xs text-[#8B8B9A] mt-1">{lbl}</div>
-              </div>
-            ))}
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <div className="avatar">VS</div>
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Vikram Singh</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Helper · Pune · ★4.9</div>
           </div>
-          <div className="p-4 rounded-2xl bg-[rgba(171,71,188,0.06)] border border-[rgba(171,71,188,0.18)]">
-            <div className="text-xs text-[#8B8B9A] uppercase tracking-wider mb-1">Streak</div>
-            <div className="font-semibold text-sm">14 days of helping · Keep it up!</div>
-          </div>
-        </motion.div>
+        </div>
       </div>
+    </aside>
+  );
+}
+
+/* ============================ TOPBAR ============================ */
+function Topbar({ title, subtitle, children }: { title: string; subtitle: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <div className="topbar">
+      <div>
+        <h1>{title}</h1>
+        <div className="subtitle">{subtitle}</div>
+      </div>
+      <div className="topbar-actions">{children}</div>
     </div>
   );
 }
 
-function RequestRow({ req }: { req: HelpRequest }) {
+/* ============================ REQUEST CARDS DATA ============================ */
+const REQUESTS = [
+  { init: 'AN', name: 'Anjali Rao · Mysuru, KA', meta: 'Requesting for 2 minutes · Urgent', msg: '"I\'m at a bus stop and can\'t read the bus number. Can someone help me?"', urgent: true },
+  { init: 'MK', name: 'Mohammed K. · Hyderabad, TS', meta: 'Requesting for 45 seconds', msg: '"I need help finding the right platform at the train station."', urgent: false },
+  { init: 'SR', name: 'Sneha R. · Chennai, TN', meta: 'Requesting for 30 seconds', msg: '"There\'s a sign here I can\'t read. Can you tell me what it says?"', urgent: false },
+];
+
+function RequestCard({ r }: { r: typeof REQUESTS[number] }) {
   return (
     <motion.div
-      variants={scaleIn}
-      initial="hidden"
-      animate="visible"
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.3, ease: EASE }}
-      className={`p-4 rounded-2xl flex items-center gap-4 ${
-        req.urgent
-          ? 'bg-[rgba(239,83,80,0.06)] border border-[rgba(239,83,80,0.4)]'
-          : 'glass border border-[rgba(171,71,188,0.25)]'
-      }`}
+      className={`request-card${r.urgent ? ' urgent' : ''}`}
+      whileHover={{ y: -4 }}
+      style={{
+        padding: 20,
+        borderRadius: 18,
+        background: r.urgent ? 'rgba(239,83,80,0.04)' : 'rgba(171,71,188,0.04)',
+        border: `0.5px solid ${r.urgent ? 'rgba(239,83,80,0.3)' : 'rgba(171,71,188,0.15)'}`,
+        marginBottom: 14,
+      }}
     >
-      <UserAvatar name={req.name} type="blind" size={44} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm">{req.name}</span>
-          {req.urgent && <Badge variant="red" dot>Urgent</Badge>}
-          <span className="text-xs text-[#8B8B9A]">· {req.city}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="req-avatar" style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,var(--orange),var(--orange-bright))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', color: '#000' }}>{r.init}</div>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{r.name}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{r.meta}</div>
+          </div>
         </div>
-        <div className="text-xs text-[#8B8B9A] mt-0.5 truncate">"{req.message}"</div>
-        <div className="text-[0.68rem] font-mono text-[#555566] mt-1">{req.time}</div>
+        <span className={`badge ${r.urgent ? 'red' : 'yellow'}`}><span className="dot" />{r.urgent ? 'Urgent' : 'Waiting'}</span>
       </div>
-      <div className="flex flex-col gap-2 flex-shrink-0">
-        <button
-          data-hover
-          className="px-4 py-1.5 rounded-full text-xs font-semibold bg-[#4CAF50] text-black hover:opacity-90 transition-opacity"
-        >
-          Accept
-        </button>
-        <button
-          data-hover
-          className="px-4 py-1.5 rounded-full text-xs font-semibold border border-[rgba(239,83,80,0.3)] text-[#EF5350] hover:bg-[rgba(239,83,80,0.08)] transition-all"
-        >
-          Decline
-        </button>
+      <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.5 }}>{r.msg}</div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn" style={{ background: 'var(--green)', color: '#000' }}>Accept &amp; Help →</button>
+        <button className="btn btn-ghost btn-sm">Decline</button>
       </div>
     </motion.div>
   );
 }
 
-function Requests() {
+/* ============================ OVERVIEW ============================ */
+function Overview({ setPage }: { setPage: (p: Page) => void }) {
+  const stats = [
+    { icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z', color: 'purple', value: '284', label: 'People Helped', valColor: 'var(--purple)' },
+    { icon: 'M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2', color: 'yellow', value: '4.9', label: 'Avg Rating', valColor: 'var(--yellow)' },
+    { icon: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2', color: 'green', value: '2.4s', label: 'Avg Response Time', valColor: 'var(--green)' },
+    { icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4 12 14.01 9 11.01', color: 'orange', value: 'Rank #1', label: 'Top Helper (Monthly)', valColor: 'var(--orange)' },
+  ];
+
   return (
     <div>
-      <PageHeader
-        title="Help Requests"
-        subtitle="Real-time requests from blind users nearby"
-        right={<Badge variant="red" dot>3 active</Badge>}
-      />
-      <motion.div
-        variants={stagger}
-        initial="hidden"
-        animate="visible"
-        className="space-y-4"
-      >
-        {REQUESTS.map((req) => (
-          <motion.div
-            key={req.name}
-            variants={fadeUp}
-            className={`glass specular p-5 rounded-3xl ${
-              req.urgent ? 'border-l-4 border-l-[#EF5350]' : 'border-l-4 border-l-[#AB47BC]'
-            }`}
-          >
-            <div className="flex items-center gap-4">
-              <UserAvatar name={req.name} type="blind" size={52} />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-display font-semibold">{req.name}</span>
-                  {req.urgent ? <Badge variant="red" dot>Urgent</Badge> : <Badge variant="purple">Normal</Badge>}
-                  <span className="text-xs text-[#8B8B9A]">· {req.city}</span>
-                </div>
-                <div className="text-sm text-[#8B8B9A] mt-1.5 italic">"{req.message}"</div>
-                <div className="text-[0.7rem] font-mono text-[#555566] mt-1.5">{req.time} · 2.1 km away</div>
+      <Topbar title="Helper Dashboard" subtitle={<span>You're <strong style={{ color: 'var(--purple)' }}>online</strong> · Available to help blind users via Echo Network</span>}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="toggle on" style={{ width: 44, height: 24 }} />
+          <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Available</span>
+        </div>
+      </Topbar>
+
+      <motion.div className="stats-grid" {...stagger}>
+        {stats.map((s, i) => (
+          <motion.div key={i} {...item}>
+            <motion.div className="stat-card" whileHover={{ y: -8 }}>
+              <div className={`stat-icon ${s.color}`}>
+                <svg viewBox="0 0 24 24"><path d={s.icon} /></svg>
               </div>
-              <div className="flex gap-2.5 flex-shrink-0">
-                <button
-                  data-hover
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold bg-[#4CAF50] text-black hover:opacity-90 transition-opacity"
-                >
-                  Accept
-                </button>
-                <button
-                  data-hover
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold border border-[rgba(239,83,80,0.3)] text-[#EF5350] hover:bg-[rgba(239,83,80,0.08)] transition-all"
-                >
-                  Decline
-                </button>
-              </div>
-            </div>
+              <div className="stat-value" style={{ color: s.valColor }}>{s.value}</div>
+              <div className="stat-label">{s.label}</div>
+            </motion.div>
           </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div className="panel" {...item}>
+        <div className="panel-header">
+          <div>
+            <div className="panel-title">Active Help Requests</div>
+            <div className="panel-sub">Blind users requesting vision assistance right now</div>
+          </div>
+          <span className="badge red"><span className="dot" />3 waiting</span>
+        </div>
+        {REQUESTS.map((r) => (
+          <RequestCard key={r.init} r={r} />
         ))}
       </motion.div>
     </div>
   );
 }
 
-function SessionHistory() {
-  const sessions: Array<[string, string, string, string, 'green' | 'orange' | 'blue']> = [
-    ['RR', 'Ramesh', 'Bengaluru', 'Reading medicine label · 3m 12s', 'green'],
-    ['PG', 'Priya G', 'Mysuru', 'Bus route identification · 2m 04s', 'blue'],
-    ['AV', 'Arun V', 'Coimbatore', 'Door sign reading · 4m 28s', 'purple' as 'blue'],
-    ['SM', 'Sameer', 'Hyderabad', 'Platform announcement · 1m 45s', 'green'],
-    ['LK', 'Lakshmi K', 'Chennai', 'Menu reading · 5m 02s', 'blue'],
+/* ============================ REQUESTS ============================ */
+function Requests() {
+  return (
+    <div>
+      <Topbar title="Help Requests" subtitle="Real-time requests from blind users" />
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="panel-header">
+          <div><div className="panel-title">Active Requests</div></div>
+        </div>
+        {REQUESTS.map((r) => (
+          <RequestCard key={r.init} r={r} />
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ============================ HISTORY ============================ */
+function History() {
+  const rows = [
+    { user: 'Sneha R.', topic: 'Read signboard', dur: '3 min', rating: '5.0', date: '2h ago' },
+    { user: 'Ravi K.', topic: 'Find keys', dur: '5 min', rating: '5.0', date: '5h ago' },
+    { user: 'Arjun N.', topic: 'Bus number', dur: '2 min', rating: '4.8', date: '1d ago' },
+    { user: 'Priya D.', topic: 'Navigate station', dur: '8 min', rating: '5.0', date: '2d ago' },
+    { user: 'Meena K.', topic: 'Read medicine label', dur: '4 min', rating: '5.0', date: '3d ago' },
   ];
   return (
     <div>
-      <PageHeader title="Session History" subtitle="Your past 5 helper sessions" />
-      <div className="glass specular p-6 rounded-3xl overflow-x-auto">
-        <table className="w-full">
+      <Topbar title="Session History" subtitle="Your past help sessions" />
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="panel-header">
+          <div><div className="panel-title">Last 30 Days</div></div>
+        </div>
+        <table>
           <thead>
-            <tr>
-              {['User', 'City', 'Task', 'Duration', 'Rating'].map((h) => (
-                <th key={h} className="text-left font-mono text-[0.68rem] uppercase tracking-wider text-[#8B8B9A] font-normal pb-3 border-b border-[rgba(255,255,255,0.06)]">{h}</th>
-              ))}
-            </tr>
+            <tr><th>User</th><th>Topic</th><th>Duration</th><th>Rating</th><th>Date</th></tr>
           </thead>
           <tbody>
-            {sessions.map(([, name, city, task, color]) => (
-              <tr key={name} className="hover:bg-[rgba(255,255,255,0.02)] transition-all">
-                <td className="py-3.5">
-                  <div className="flex items-center gap-3">
-                    <UserAvatar name={name} type="blind" size={32} />
-                    <span className="text-sm font-semibold">{name}</span>
-                  </div>
-                </td>
-                <td className="text-sm text-[#8B8B9A]">{city}</td>
-                <td className="text-sm text-[#8B8B9A]">{task}</td>
-                <td className="text-sm font-mono text-[#8B8B9A]">★ 5.0</td>
-                <td><Badge variant={color}>Completed</Badge></td>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td>{r.user}</td>
+                <td>{r.topic}</td>
+                <td>{r.dur}</td>
+                <td><span style={{ color: 'var(--yellow)' }}>★</span> {r.rating}</td>
+                <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.78rem', color: 'var(--muted)' }}>{r.date}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
+/* ============================ REQUEST MAP ============================ */
 function RequestMap() {
   return (
     <div>
-      <PageHeader title="Request Map" subtitle="Live requests across India" right={<Badge variant="red" dot>3 active</Badge>} />
-      <div className="glass specular p-6 rounded-3xl">
-        <div
-          className="h-[420px] rounded-[20px] overflow-hidden border border-[rgba(255,255,255,0.18)] relative flex items-center justify-center"
-          style={{ background: 'radial-gradient(ellipse at center, #1A1A2E, #0A0A18)' }}
-        >
-          {REQUESTS.map((req, i) => {
-            const positions: Array<[string, string]> = [['42%', '38%'], ['58%', '62%'], ['36%', '64%']];
-            const [top, left] = positions[i];
-            return (
-              <motion.div
-                key={req.name}
-                className="absolute flex flex-col items-center"
-                style={{ top, left }}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3 + i * 0.15, type: 'spring', damping: 12 }}
-              >
-                <motion.div
-                  animate={{ scale: [1, 1.6, 1], opacity: [0.7, 0, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: EASE }}
-                  className="absolute w-8 h-8 rounded-full"
-                  style={{ background: req.urgent ? '#EF5350' : '#AB47BC' }}
-                />
-                <div
-                  className="w-3 h-3 rounded-full relative"
-                  style={{ background: req.urgent ? '#EF5350' : '#AB47BC', boxShadow: `0 0 16px ${req.urgent ? 'rgba(239,83,80,0.6)' : 'rgba(171,71,188,0.6)'}` }}
-                />
-                <div className="text-[0.65rem] font-mono text-[#8B8B9A] mt-1 whitespace-nowrap">{req.city}</div>
-              </motion.div>
-            );
-          })}
-          <div className="absolute bottom-4 left-4 font-mono text-[0.65rem] text-[#8B8B9A] uppercase tracking-wider">Live Request Map · India</div>
+      <Topbar title="Request Map" subtitle="Nearby blind users needing help">
+        <span className="badge red"><span className="dot" />3 active nearby</span>
+      </Topbar>
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div style={{ position: 'relative', height: 450, borderRadius: 20, overflow: 'hidden', border: '0.5px solid var(--glass-border-hi)', background: 'radial-gradient(ellipse at 50% 50%, rgba(171,71,188,0.06), transparent 60%), #05050c' }}>
+          {/* Helper center marker */}
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 16, height: 16, borderRadius: '50%', background: '#AB47BC', boxShadow: '0 0 14px rgba(171,71,188,0.7)', border: '2px solid #fff', zIndex: 3 }} />
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 200, height: 200, borderRadius: '50%', background: 'rgba(171,71,188,0.06)', border: '1px dashed rgba(171,71,188,0.2)' }} />
+          {/* Request markers */}
+          <div style={{ position: 'absolute', top: '32%', left: '38%', width: 14, height: 14, borderRadius: '50%', background: '#EF5350', boxShadow: '0 0 12px rgba(239,83,80,0.7)', border: '2px solid #fff', animation: 'pulse 1.5s infinite' }} />
+          <div style={{ position: 'absolute', top: '58%', left: '64%', width: 14, height: 14, borderRadius: '50%', background: '#F9A825', boxShadow: '0 0 12px rgba(249,168,37,0.7)', border: '2px solid #fff', animation: 'pulse 2s infinite' }} />
+          <div style={{ position: 'absolute', top: '70%', left: '30%', width: 14, height: 14, borderRadius: '50%', background: '#F9A825', boxShadow: '0 0 12px rgba(249,168,37,0.7)', border: '2px solid #fff', animation: 'pulse 2s infinite' }} />
+          <div style={{ position: 'absolute', bottom: 16, left: 16, fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'JetBrains Mono',monospace" }}>Pune · 18.5°N 73.8°E</div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
+/* ============================ REPUTATION ============================ */
 function Reputation() {
-  const badges: Array<[string, string, string, 'orange' | 'purple' | 'green' | 'blue']> = [
-    ['Top Helper', 'Ranked #1 nationwide · 3 months running', 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', 'orange'],
-    ['250+ Club', 'Helped over 250 people in your journey', 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75', 'purple'],
-    ['Verified', 'Identity and background confirmed', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4', 'green'],
-    ['Fast Responder', 'Average response under 3 seconds', 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', 'blue'],
+  const badges = [
+    { color: 'var(--yellow)', bg: 'rgba(249,168,37,0.15)', icon: 'M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2', title: 'Top Helper', sub: 'Rank #1 monthly' },
+    { color: 'var(--purple)', bg: 'rgba(171,71,188,0.15)', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z', title: '250+ Club', sub: '284 helped' },
+    { color: 'var(--green)', bg: 'rgba(76,175,80,0.15)', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4 12 14.01 9 11.01', title: 'Verified', sub: 'ID confirmed' },
+    { color: 'var(--blue)', bg: 'rgba(66,165,245,0.15)', icon: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2', title: 'Fast Responder', sub: 'Avg 2.4s' },
   ];
-  const colors: Record<string, string> = {
-    orange: 'rgba(255,107,26,0.12)',
-    purple: 'rgba(171,71,188,0.12)',
-    green: 'rgba(76,175,80,0.12)',
-    blue: 'rgba(66,165,245,0.12)',
-  };
-  const strokes: Record<string, string> = {
-    orange: '#FF6B1A',
-    purple: '#AB47BC',
-    green: '#4CAF50',
-    blue: '#42A5F5',
-  };
-
   return (
     <div>
-      <PageHeader title="Reputation" subtitle="Your earned badges and milestones" right={<Badge variant="purple">Level 7</Badge>} />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {badges.map(([name, desc, path, color]) => (
-          <motion.div
-            key={name}
-            variants={scaleIn}
-            initial="hidden"
-            animate="visible"
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.3, ease: EASE }}
-            className="glass specular p-6 rounded-3xl text-center"
-            style={{ borderColor: colors[color] }}
-          >
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style={{ background: colors[color] }}
-            >
-              <svg viewBox="0 0 24 24" width="28" height="28" className="fill-none" strokeWidth="1.5" stroke={strokes[color]}>
-                <path d={path} />
-              </svg>
-            </div>
-            <div className="font-display font-semibold text-sm" style={{ color: strokes[color] }}>{name}</div>
-            <div className="text-[0.72rem] text-[#8B8B9A] mt-1.5 leading-snug">{desc}</div>
+      <Topbar title="Reputation" subtitle="Your impact and badges" />
+      <motion.div className="stats-grid" {...stagger}>
+        <motion.div {...item}>
+          <motion.div className="stat-card" whileHover={{ y: -8 }}>
+            <div className="stat-icon purple"><svg viewBox="0 0 24 24"><path d="M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg></div>
+            <div className="stat-value" style={{ color: 'var(--purple)' }}>284</div>
+            <div className="stat-label">Total Sessions</div>
           </motion.div>
-        ))}
-      </div>
-
-      <div className="glass specular p-6 rounded-3xl">
-        <div className="font-display font-semibold text-lg mb-5">Progress to Next Level</div>
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-2.5 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: '72%' }}
-              transition={{ duration: 1.2, ease: EASE }}
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #AB47BC, #CE93D8)' }}
-            />
-          </div>
-          <span className="font-mono text-sm text-[#AB47BC]">284 / 400</span>
+        </motion.div>
+        <motion.div {...item}>
+          <motion.div className="stat-card" whileHover={{ y: -8 }}>
+            <div className="stat-icon yellow"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2" /></svg></div>
+            <div className="stat-value" style={{ color: 'var(--yellow)' }}>47h</div>
+            <div className="stat-label">Hours Volunteered</div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="panel-header"><div><div className="panel-title">Badges Earned</div></div></div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+          {badges.map((b) => (
+            <motion.div key={b.title} whileHover={{ y: -6 }} style={{ textAlign: 'center', padding: 20, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '0.5px solid var(--glass-border)' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: `radial-gradient(circle,${b.bg},transparent)`, border: `2px solid ${b.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke={b.color} strokeWidth="1.5"><path d={b.icon} /></svg>
+              </div>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{b.title}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{b.sub}</div>
+            </motion.div>
+          ))}
         </div>
-        <div className="text-xs text-[#8B8B9A] mt-2">116 more sessions to reach Level 8 · Legend Helper</div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
+/* ============================ SECURITY ============================ */
 function Security() {
   return (
     <div>
-      <PageHeader title="Security" subtitle="Account protection and verification" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>}
-          value="Verified"
-          label="Identity"
-          accent="green"
-        />
-        <StatCard
-          icon={<svg viewBox="0 0 24 24" className="w-5 h-5 fill-none" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>}
-          value="On"
-          label="Two-Factor"
-          accent="purple"
-        />
-      </div>
-      <div className="glass specular p-6 rounded-3xl">
-        <div className="font-display font-semibold text-lg mb-4">Verification Status</div>
-        <div className="space-y-3">
-          {([
-            ['Government ID', 'Aadhaar verified', true],
-            ['Background Check', 'Clean · Updated Jan 2026', true],
-            ['Phone Number', '+91 verified', true],
-            ['Address Proof', 'Bengaluru, KA', true],
-          ] as [string, string, boolean][]).map(([label, val, ok]) => (
-            <div key={label} className="flex items-center justify-between p-3 rounded-xl hover:bg-[rgba(255,255,255,0.03)]">
-              <div>
-                <div className="text-sm font-semibold">{label}</div>
-                <div className="text-xs text-[#8B8B9A]">{val}</div>
-              </div>
-              {ok ? <Badge variant="green">Verified</Badge> : <Badge variant="yellow">Pending</Badge>}
+      <Topbar title="Security" subtitle="Your account is protected">
+        <span className="badge green"><span className="dot" />Verified + Secured</span>
+      </Topbar>
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'conic-gradient(var(--green) 0% 100%, rgba(255,255,255,0.06) 100% 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' as const }}>
+              <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.4rem', color: 'var(--green)' }}>100%</div>
+              <div style={{ fontSize: '0.55rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Secure</div>
             </div>
-          ))}
+          </div>
+          <div>
+            <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.1rem', marginBottom: 4 }}>Perfect security score</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Identity verified · Passkey · 2FA · All protections enabled.</div>
+          </div>
         </div>
+      </motion.div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <motion.div className="panel" {...item}>
+          <div className="panel-header">
+            <div><div className="panel-title">Identity Verified</div></div>
+            <span className="badge green"><span className="dot" />Confirmed</span>
+          </div>
+          <div style={{ padding: 14, borderRadius: 14, background: 'rgba(76,175,80,0.04)', border: '0.5px solid rgba(76,175,80,0.12)', fontSize: '0.82rem', color: 'var(--muted)' }}>
+            <strong style={{ color: 'var(--green)' }}>Aadhaar verified</strong> on Aug 1, 2026 · Phone confirmed · Background check passed. Required for all Echo Network helpers.
+          </div>
+        </motion.div>
+        <motion.div className="panel" {...item}>
+          <div className="panel-header"><div><div className="panel-title">Authentication</div></div></div>
+          <div style={{ padding: '14px 0' }}>
+            <div style={{ fontSize: '0.85rem', marginBottom: 6 }}>Passkey: <span style={{ color: 'var(--green)' }}>iPhone Face ID ✓</span></div>
+            <div style={{ fontSize: '0.85rem', marginBottom: 6 }}>2FA: <span style={{ color: 'var(--green)' }}>TOTP Active ✓</span></div>
+            <div style={{ fontSize: '0.85rem' }}>Biometric Lock: <span style={{ color: 'var(--green)' }}>On ✓</span></div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
 }
 
+/* ============================ SETTINGS ============================ */
 function Settings() {
   return (
     <div>
-      <PageHeader title="Settings" subtitle="Helper preferences and availability" />
-      <div className="glass specular p-6 rounded-3xl space-y-3 max-w-2xl">
-        {([
-          ['Auto-Accept Urgent', 'Automatically accept requests marked urgent', false],
-          ['Online Status', 'Show as available for new requests', true],
-          ['Session Recording', 'Save transcripts of your sessions', true],
-          ['Payout Notifications', 'Alert me when earnings are deposited', true],
-        ] as [string, string, boolean][]).map(([label, desc, on]) => (
-          <div key={label} className="flex items-center justify-between p-4 rounded-2xl glass">
-            <div>
-              <div className="font-semibold text-sm">{label}</div>
-              <div className="text-xs text-[#8B8B9A] mt-0.5">{desc}</div>
-            </div>
-            <div className={`w-10 h-6 rounded-full p-0.5 transition-all ${on ? 'bg-[#AB47BC]' : 'bg-[rgba(255,255,255,0.10)]'}`}>
-              <motion.div animate={{ x: on ? 16 : 0 }} transition={{ duration: 0.2 }} className="w-5 h-5 rounded-full bg-white" />
-            </div>
+      <Topbar title="Settings" subtitle="Helper preferences" />
+      <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="panel-header"><div><div className="panel-title">Availability</div></div></div>
+        <div style={{ padding: '12px 0', borderBottom: '0.5px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Auto-accept urgent requests</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Skip queue for emergencies</div>
           </div>
-        ))}
-      </div>
+          <div className="toggle" />
+        </div>
+        <div style={{ padding: '12px 0', borderBottom: '0.5px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Languages I can help in</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>English, Hindi, Marathi</div>
+          </div>
+          <button className="btn btn-ghost btn-sm">Edit</button>
+        </div>
+        <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Max distance from me</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>50 km (remote OK)</div>
+          </div>
+          <button className="btn btn-ghost btn-sm">Edit</button>
+        </div>
+      </motion.div>
     </div>
   );
 }
+
+export default HelperDashboard;

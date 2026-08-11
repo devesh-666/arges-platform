@@ -1,72 +1,11 @@
 @import "tailwindcss";
 
-/* ============================================================
-   ARGES — Design Tokens (CSS Variables)
-   ============================================================ */
-:root {
-  --bg: #000008;
-  --bg-2: #050510;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-hi: rgba(255, 255, 255, 0.09);
-  --glass-border: rgba(255, 255, 255, 0.10);
-  --glass-border-hi: rgba(255, 255, 255, 0.18);
-  --orange: #FF6B1A;
-  --orange-bright: #FF8533;
-  --orange-glow: rgba(255, 107, 26, 0.4);
-  --green: #4CAF50;
-  --red: #EF5350;
-  --yellow: #F9A825;
-  --blue: #42A5F5;
-  --purple: #AB47BC;
-  --white: #fff;
-  --muted: #8B8B9A;
-  --muted-2: #555566;
-  --accent: #FF6B1A;
-  --accent-bright: #FF8533;
-  --accent-glow: rgba(255, 107, 26, 0.4);
-}
+/* Google Fonts — loaded via index.html <link> for performance */
+/* The full ARGES design system from the HTML prototype */
+@import "./arges.css";
 
-.theme-admin { --accent: #FF6B1A; --accent-bright: #FF8533; --accent-glow: rgba(255,107,26,0.4); }
-.theme-head { --accent: #4CAF50; --accent-bright: #66BB6A; --accent-glow: rgba(76,175,80,0.4); }
-.theme-member { --accent: #42A5F5; --accent-bright: #64B5F6; --accent-glow: rgba(66,165,245,0.4); }
-.theme-helper { --accent: #AB47BC; --accent-bright: #CE93D8; --accent-glow: rgba(171,71,188,0.4); }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--white);
-  font-family: 'Hanken Grotesk', -apple-system, sans-serif;
-  overflow-x: hidden;
-  background-image:
-    radial-gradient(ellipse 60% 50% at 20% 5%, rgba(255,107,26,0.06), transparent),
-    radial-gradient(ellipse 50% 40% at 85% 30%, rgba(80,40,200,0.04), transparent);
-  background-attachment: fixed;
-}
-
-::selection { background: var(--accent); color: #000; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--glass-border-hi); border-radius: 3px; }
-
-.glass {
-  background: var(--glass);
-  backdrop-filter: blur(30px) saturate(1.5);
-  -webkit-backdrop-filter: blur(30px) saturate(1.5);
-  border: 0.5px solid var(--glass-border);
-  border-radius: 24px;
-}
-
-.gradient-text {
-  background: linear-gradient(120deg, #FF6B1A, #FF8533, #FFB266, #FF8533, #FF6B1A);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientFlow 5s linear infinite;
-}
-
-@keyframes gradientFlow { to { background-position: 300% 50%; } }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-@media (min-width: 1024px) { body { cursor: none; } }
+/* Role theme overrides (for dashboards) */
+.theme-admin { --orange: #FF6B1A; --orange-bright: #FF8533; --orange-glow: rgba(255,107,26,0.4); }
+.theme-head { --orange: #4CAF50; --orange-bright: #66BB6A; --orange-glow: rgba(76,175,80,0.4); }
+.theme-member { --orange: #42A5F5; --orange-bright: #64B5F6; --orange-glow: rgba(66,165,245,0.4); }
+.theme-helper { --orange: #AB47BC; --orange-bright: #CE93D8; --orange-glow: rgba(171,71,188,0.4); }
