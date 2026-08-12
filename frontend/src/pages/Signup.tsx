@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -14,7 +14,6 @@ export function Signup() {
   const [codeError, setCodeError] = useState(false);
   const [verified, setVerified] = useState(false);
   const [nfcScanning, setNfcScanning] = useState(false);
-  const navigate = useNavigate();
 
   const formatCode = (v: string) => {
     const clean = v.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 15);

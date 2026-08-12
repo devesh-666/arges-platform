@@ -400,17 +400,17 @@ function Analytics() {
         <div className="panel-header">
           <div><div className="panel-title">Top AI Features Used</div></div>
         </div>
-        {[
+        {([
           ['Object Detection', '18.2k', 88, 'var(--orange)'],
           ['OCR Reading', '12.7k', 62, 'var(--orange-bright)'],
           ['Currency ID', '6.4k', 31, 'var(--yellow)'],
           ['Face Recognition', '4.1k', 20, '#42A5F5'],
           ['Navigation', '3.8k', 18, '#AB47BC'],
-        ].map(([label, val, pct, color]) => (
-          <div key={label as string} style={{ marginBottom: 14 }}>
+        ] as const).map(([label, val, pct, color]) => (
+          <div key={label} style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
               <span style={{ fontSize: '0.85rem' }}>{label}</span>
-              <span style={{ fontSize: '0.78rem', fontFamily: "'JetBrains Mono',monospace", color }}>{val}</span>
+              <span style={{ fontSize: '0.78rem', fontFamily: "'JetBrains Mono',monospace", color: color as string }}>{val}</span>
             </div>
             <div style={{ height: 5, background: 'var(--glass-border-hi)', borderRadius: 999, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 999 }} />
@@ -939,16 +939,16 @@ function ServerHealth() {
         </motion.div>
         <motion.div className="panel" {...item}>
           <div className="panel-header"><div><div className="panel-title">System Resources</div></div></div>
-          {[
+          {([
             ['CPU Usage', '23%', 23, 'var(--green-bright)'],
             ['Memory', '67%', 67, 'var(--yellow)'],
             ['Disk', '41%', 41, 'var(--green-bright)'],
             ['Bandwidth', '78%', 78, 'var(--orange)'],
-          ].map(([label, pct, w, color]) => (
-            <div key={label as string} style={{ marginBottom: 12 }}>
+          ] as const).map(([label, pct, w, color]) => (
+            <div key={label} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: '0.82rem' }}>{label}</span>
-                <span style={{ fontSize: '0.82rem', fontFamily: "'JetBrains Mono',monospace", color }}>{pct}</span>
+                <span style={{ fontSize: '0.82rem', fontFamily: "'JetBrains Mono',monospace", color: color as string }}>{pct}</span>
               </div>
               <div style={{ height: 6, background: 'var(--glass-border-hi)', borderRadius: 999, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${w}%`, background: color, borderRadius: 999 }} />

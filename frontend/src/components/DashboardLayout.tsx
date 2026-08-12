@@ -23,7 +23,6 @@ export function DashboardLayout({
   themeClass,
   roleLabel,
   userName,
-  userInitials,
   userRole,
   avatarType,
   sections,
@@ -32,7 +31,6 @@ export function DashboardLayout({
   themeClass: string;
   roleLabel: string;
   userName: string;
-  userInitials: string;
   userRole: string;
   avatarType: 'blind' | 'family' | 'head' | 'helper' | 'admin';
   sections: NavSection[];
