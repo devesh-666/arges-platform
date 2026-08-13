@@ -3,8 +3,7 @@ services:
     name: arges-vision-api
     runtime: node
     plan: free
-    rootDir: backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm run build
     startCommand: npm start
     envVars:
       - key: MONGODB_URI
