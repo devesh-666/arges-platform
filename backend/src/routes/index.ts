@@ -101,6 +101,7 @@ router.post('/families/:id/members', async (req, res) => {
     family.members.push({
       userId: newMember._id, name, relation,
       permissions: permissions || { canRequestVideo: true, canSeeGPS: true },
+      joinedAt: new Date(),
     });
     await family.save();
     res.json({ success: true, data: family });
