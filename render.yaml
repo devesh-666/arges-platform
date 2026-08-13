@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: arges-vision-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_VERSION
+        value: 20.0.0
+    healthCheckPath: /health
+    autoDeploy: true
