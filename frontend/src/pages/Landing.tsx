@@ -1,7 +1,9 @@
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { GlassesViewer3D } from '../components/GlassesViewer3D';
+
+// Lazy load 3D viewer so Three.js only downloads when needed
+const GlassesViewer3D = lazy(() => import('../components/GlassesViewer3D').then(m => ({ default: m.GlassesViewer3D })));
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -133,7 +135,9 @@ export function Landing() {
       <section className="hero" ref={heroRef}>
         {/* 3D MODEL — stays centered, auto-rotates */}
         <div className="hero-3d">
-          <GlassesViewer3D />
+          <Suspense fallback={<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(255,107,26,0.2)', borderTopColor: '#FF6B1A', animation: 'spin 0.8s linear infinite' }} /></div>}>
+            <GlassesViewer3D />
+          </Suspense>
         </div>
 
         {/* FLOATING CARDS */}
@@ -280,7 +284,9 @@ export function Landing() {
             style={{ x: ctaModelX, rotateY: ctaModelRotate }}
             className="w-[300px] h-[200px] mx-auto mb-8"
           >
-            <GlassesViewer3D autoRotate={true} />
+            <Suspense fallback={<div style={{ height: 200 }} />}>
+              <GlassesViewer3D autoRotate={true} />
+            </Suspense>
           </motion.div>
 
           <motion.h2 variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true }} className="font-display font-bold text-[clamp(2.2rem,4.8vw,3.8rem)] tracking-tight leading-none mb-5">
