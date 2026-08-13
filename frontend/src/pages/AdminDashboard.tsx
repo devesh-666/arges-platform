@@ -125,7 +125,7 @@ function AdminGate({ onAuthed }: { onAuthed: () => void }) {
             <circle cx="50" cy="50" r="3.5" fill="#FF6B1A" />
           </svg>
         </div>
-        <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.8rem', marginBottom: 6 }}>ARGES Admin</div>
+        <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.8rem', marginBottom: 6 }}>ARGES Vision Admin</div>
         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.7rem', color: 'var(--orange)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 32 }}>Restricted Access · Authorized Personnel Only</div>
         <input
           type="password"

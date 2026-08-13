@@ -90,7 +90,7 @@ export function Signup() {
             <circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none"/>
             <circle cx="50" cy="50" r="3.5" fill="#FF6B1A"/>
           </svg>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.5rem', marginTop: '8px' }}>ARGES</h1>
+          <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.5rem', marginTop: '8px' }}>ARGES Vision</h1>
           <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.65rem', color: 'var(--orange)', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: '4px' }}>Create Family Account</div>
         </div>
 

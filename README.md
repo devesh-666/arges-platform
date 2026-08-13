@@ -1,4 +1,4 @@
-# ARGES Platform — Full TypeScript Application
+# ARGES Vision Platform — Full TypeScript Application
 
 > AI Vision Ecosystem for the Visually Impaired
 > Forging Light. Empowering Sight.

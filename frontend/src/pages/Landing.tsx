@@ -300,7 +300,7 @@ export function Landing() {
       <footer>
         <div className="footer-grid">
           <div className="footer-brand">
-            <h3><span className="dot"></span>ARGES</h3>
+            <h3><span className="dot"></span>ARGES Vision</h3>
             <p>Forging Light. Empowering Sight. — A spatial AI vision ecosystem for the visually impaired.</p>
           </div>
           <div className="footer-col"><h4>Product</h4><a href="#ecosystem">Ecosystem</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
