@@ -7,15 +7,26 @@ import nodemailer from 'nodemailer';
  * Get one at: https://myaccount.google.com/apppasswords
  */
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || '',
-    pass: process.env.EMAIL_PASS || '',
-  },
-});
+let _transporter: nodemailer.Transporter | null = null;
 
-const FROM = `"ARGES Vision" <${process.env.EMAIL_USER || 'noreply@argesvision.com'}>`;
+function getTransporter(): nodemailer.Transporter {
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || '',
+      },
+      tls: {
+        rejectUnauthorized: false, // Fixes Windows certificate chain issues
+      },
+    });
+  }
+  return _transporter;
+}
+
 const BRAND = '#FF6B1A';
 
 function wrap(title: string, bodyHtml: string, ctaLabel?: string, ctaUrl?: string): string {
@@ -46,7 +57,8 @@ async function send(to: string, subject: string, html: string) {
     return false;
   }
   try {
-    await transporter.sendMail({ from: FROM, to, subject, html });
+    const from = `"ARGES Vision" <${process.env.EMAIL_USER}>`;
+    await getTransporter().sendMail({ from, to, subject, html });
     console.log(`[MAIL SENT] To: ${to} | Subject: ${subject}`);
     return true;
   } catch (err) {
