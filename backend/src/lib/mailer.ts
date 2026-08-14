@@ -261,3 +261,258 @@ export async function sendLowBatteryEmail(to: string, userName: string, battery:
     meta: [['Battery', `${battery}% remaining`]],
   }));
 }
+
+// ============ 9. DEVICE PAIRED ============
+export async function sendDevicePairedEmail(to: string, userName: string, deviceName: string, deviceCode: string) {
+  return send(to, `Device paired: ${deviceName}`, wrap({
+    title: 'Device Paired Successfully',
+    tone: 'success',
+    body: `<p>The ARGES glasses have been paired to <b style="color:#fff;">${userName}</b>.</p>
+           <p>The device is now connected to your family and ready to use.</p>`,
+    meta: [
+      ['Device', deviceName],
+      ['Pairing Code', deviceCode],
+      ['Status', 'CONNECTED'],
+    ],
+    ctaLabel: 'View Device',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 10. DEVICE OFFLINE ============
+export async function sendDeviceOfflineEmail(to: string, userName: string, deviceName: string, lastSeen: string) {
+  return send(to, `Device Offline: ${deviceName}`, wrap({
+    title: 'Device Went Offline',
+    tone: 'warning',
+    body: `<p>The ARGES glasses of <b style="color:#fff;">${userName}</b> have gone offline.</p>
+           <p>This could mean the battery died, the device was turned off, or there is no network connection.</p>
+           <p>If this was unexpected, please check on them.</p>`,
+    meta: [
+      ['Device', deviceName],
+      ['Last seen', lastSeen],
+    ],
+    ctaLabel: 'View Status',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 11. DEVICE LOCKED ============
+export async function sendDeviceLockedEmail(to: string, userName: string, deviceName: string, reason: string) {
+  return send(to, `Device Locked: ${deviceName}`, wrap({
+    title: 'Device Locked Remotely',
+    tone: 'danger',
+    body: `<p style="color:#EF5350;font-weight:700;">The ARGES glasses have been locked.</p>
+           <p>Device <b style="color:#fff;">${deviceName}</b> (registered to <b style="color:#fff;">${userName}</b>) has been remotely locked.</p>
+           <p>All features are disabled until unlocked by the registered phone.</p>`,
+    meta: [
+      ['Device', deviceName],
+      ['Reason', reason],
+      ['Locked at', new Date().toLocaleString('en-IN')],
+    ],
+  }));
+}
+
+// ============ 12. FIRMWARE UPDATE ============
+export async function sendFirmwareUpdateEmail(to: string, userName: string, deviceName: string, version: string, notes: string) {
+  return send(to, `Firmware ${version} installed on ${deviceName}`, wrap({
+    title: 'Glasses Updated',
+    tone: 'success',
+    body: `<p>The ARGES glasses of <b style="color:#fff;">${userName}</b> have been updated to <b style="color:#4CAF50;">${version}</b>.</p>
+           <p style="color:#8B8B9A;font-size:13px;">What is new:</p>
+           <p style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;color:#B9B9C6;">${notes}</p>`,
+    meta: [
+      ['Device', deviceName],
+      ['Version', version],
+    ],
+  }));
+}
+
+// ============ 13. FAMILY MEMBER INVITE ============
+export async function sendMemberInviteEmail(to: string, name: string, relation: string, headName: string, blindUserName: string) {
+  return send(to, `${headName} invited you to join the family of ${blindUserName}`, wrap({
+    title: `You are invited, ${name}!`,
+    body: `<p><b style="color:#fff;">${headName}</b> (Family Head) has invited you to join the ARGES Vision family of <b style="color:#fff;">${blindUserName}</b> as their <b style="color:#FF6B1A;">${relation}</b>.</p>
+           <p>Once you accept, you will get your own dashboard where you can:</p>
+           <p>&bull; See ${blindUserName}'s live location<br>
+           &bull; Request consent-based video access<br>
+           &bull; Receive SOS and fall alerts instantly</p>`,
+    meta: [
+      ['Invited by', headName],
+      ['Your relation', relation],
+      ['Family member', blindUserName],
+    ],
+    ctaLabel: 'Accept Invitation',
+    ctaUrl: 'https://arges-vision.netlify.app/login',
+  }));
+}
+
+// ============ 14. MEMBER JOINED ============
+export async function sendMemberJoinedEmail(to: string, headName: string, memberName: string, relation: string) {
+  return send(to, `${memberName} joined your family`, wrap({
+    title: 'New Family Member',
+    tone: 'success',
+    body: `<p><b style="color:#fff;">${memberName}</b> (${relation}) has accepted the invitation and joined your family.</p>
+           <p>They now have their own dashboard and will receive alerts for your blind family member.</p>`,
+    meta: [
+      ['Member', memberName],
+      ['Relation', relation],
+      ['Status', 'ACTIVE'],
+    ],
+    ctaLabel: 'View Family',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 15. MEMBER REMOVED ============
+export async function sendMemberRemovedEmail(to: string, memberName: string, relation: string, headName: string) {
+  return send(to, `You were removed from the family by ${headName}`, wrap({
+    title: 'Removed from Family',
+    tone: 'danger',
+    body: `<p><b style="color:#fff;">${headName}</b> (Family Head) has removed you from the family.</p>
+           <p>You no longer have access to the blind family member's location, video, or alerts.</p>
+           <p style="color:#8B8B9A;">If you believe this was a mistake, contact the Family Head.</p>`,
+    meta: [
+      ['Removed by', headName],
+      ['Your relation was', relation],
+    ],
+  }));
+}
+
+// ============ 16. CONSENT EXPIRED (timeout) ============
+export async function sendConsentExpiredEmail(to: string, blindUserName: string) {
+  return send(to, `${blindUserName} did not respond to your request`, wrap({
+    title: 'Request Expired',
+    tone: 'warning',
+    body: `<p>Your consent request to <b style="color:#fff;">${blindUserName}</b> has expired.</p>
+           <p>${blindUserName} did not respond within 30 seconds, so the request was auto-declined.</p>
+           <p>You can send a new request at any time.</p>`,
+    meta: [['Status', 'AUTO-DECLINED (timeout)']],
+    ctaLabel: 'Try Again',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 17. VIEWING SESSION STARTED ============
+export async function sendViewingStartedEmail(to: string, blindUserName: string, requesterName: string, durationMinutes: number) {
+  return send(to, `Viewing session active: ${blindUserName}`, wrap({
+    title: 'Viewing Session Active',
+    tone: 'success',
+    body: `<p>Your <b style="color:#fff;">${durationMinutes}-minute</b> viewing session with <b style="color:#fff;">${blindUserName}</b> is now active.</p>
+           <p style="color:#8B8B9A;">${blindUserName} hears a reminder chime every 5 minutes and can end the session anytime by saying "ARGES, stop viewing".</p>`,
+    meta: [
+      ['Session with', blindUserName],
+      ['Duration', `${durationMinutes} minutes`],
+      ['Ends at', new Date(Date.now() + durationMinutes * 60000).toLocaleTimeString('en-IN')],
+    ],
+    ctaLabel: 'Start Viewing',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 18. VIEWING ENDED ============
+export async function sendViewingEndedEmail(to: string, blindUserName: string, revokedBy: 'time' | 'user' | 'family') {
+  const reason = revokedBy === 'user' ? `${blindUserName} said "stop viewing"` : revokedBy === 'family' ? 'You ended the session' : 'Time expired';
+  return send(to, `Viewing session ended: ${blindUserName}`, wrap({
+    title: 'Viewing Session Ended',
+    body: `<p>The viewing session with <b style="color:#fff;">${blindUserName}</b> has ended.</p>`,
+    meta: [
+      ['Ended by', revokedBy === 'user' ? `${blindUserName} (voice command)` : revokedBy === 'family' ? 'You' : 'Auto (time expired)'],
+      ['Reason', reason],
+    ],
+  }));
+}
+
+// ============ 19. STRANGER FOLLOW ALERT ============
+export async function sendStrangerAlertEmail(to: string, userName: string, location: string) {
+  return send(to, `STRANGER ALERT: someone may be following ${userName}`, wrap({
+    title: 'Possible Stranger Following',
+    tone: 'danger',
+    body: `<p style="color:#EF5350;font-weight:700;">The ARGES glasses detected a possible stranger following.</p>
+           <p>The AI detected the same unidentified person near <b style="color:#fff;">${userName}</b> multiple times.</p>
+           <p>The glasses have started auto-recording. Please check on them immediately.</p>`,
+    meta: [
+      ['User', userName],
+      ['Location', location],
+      ['Action', 'AUTO-RECORDING'],
+    ],
+    ctaLabel: 'View Live Now',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 20. HAZARD DETECTED ============
+export async function sendHazardAlertEmail(to: string, userName: string, hazard: string, location: string) {
+  return send(to, `HAZARD ALERT: ${hazard} near ${userName}`, wrap({
+    title: `Hazard Detected: ${hazard}`,
+    tone: 'warning',
+    body: `<p style="color:#F9A825;font-weight:700;">The ARGES glasses detected a hazard.</p>
+           <p><b style="color:#fff;">${hazard}</b> was detected near <b style="color:#fff;">${userName}</b>.</p>
+           <p>${userName} has been warned via voice and haptic feedback.</p>`,
+    meta: [
+      ['Hazard', hazard],
+      ['User', userName],
+      ['Location', location],
+    ],
+    ctaLabel: 'Check Status',
+    ctaUrl: 'https://arges-vision.netlify.app/family',
+  }));
+}
+
+// ============ 21. ACCOUNT SUSPENDED ============
+export async function sendAccountSuspendedEmail(to: string, name: string, reason: string) {
+  return send(to, 'Your ARGES Vision account has been suspended', wrap({
+    title: 'Account Suspended',
+    tone: 'danger',
+    body: `<p>Hi <b style="color:#fff;">${name}</b>,</p>
+           <p>Your ARGES Vision account has been suspended by an administrator.</p>
+           <p style="color:#F9A825;">Reason: ${reason}</p>
+           <p>Contact support if you believe this is an error.</p>`,
+    meta: [
+      ['Status', 'SUSPENDED'],
+      ['Date', new Date().toLocaleString('en-IN')],
+    ],
+  }));
+}
+
+// ============ 22. NEW LOGIN ============
+export async function sendNewLoginEmail(to: string, name: string, device: string, location: string) {
+  return send(to, `New sign-in to your ARGES Vision account`, wrap({
+    title: 'New Sign-in Detected',
+    body: `<p>Hi <b style="color:#fff;">${name}</b>,</p>
+           <p>A new sign-in to your ARGES Vision account was detected.</p>
+           <p style="color:#F9A825;">If this was not you, change your password immediately.</p>`,
+    meta: [
+      ['Device', device],
+      ['Location', location],
+      ['Time', new Date().toLocaleString('en-IN')],
+    ],
+  }));
+}
+
+// ============ 23. HELPER VERIFIED ============
+export async function sendHelperVerifiedEmail(to: string, name: string) {
+  return send(to, 'You are now a verified Echo Helper', wrap({
+    title: 'Helper Verified!',
+    tone: 'success',
+    body: `<p>Congratulations, <b style="color:#fff;">${name}</b>!</p>
+           <p>Your identity has been verified and you are now a <b style="color:#AB47BC;">Verified Echo Helper</b>.</p>
+           <p>You can now accept help requests from blind users in your area. Your sessions and ratings will build your reputation.</p>`,
+    meta: [
+      ['Status', 'VERIFIED'],
+      ['Network', 'Echo Network'],
+    ],
+    ctaLabel: 'Open Helper Dashboard',
+    ctaUrl: 'https://arges-vision.netlify.app/helper',
+  }));
+}
+
+// ============ 24. RATING REQUEST ============
+export async function sendRatingRequestEmail(to: string, helperName: string, blindUserName: string) {
+  return send(to, `How was your session with ${helperName}?`, wrap({
+    title: 'Rate Your Help Session',
+    body: `<p>Your recent Echo Network help session with <b style="color:#fff;">${helperName}</b> has ended.</p>
+           <p>Please rate the session to help other blind users find great helpers.</p>`,
+    ctaLabel: 'Rate Session',
+    ctaUrl: 'https://arges-vision.netlify.app/helper',
+  }));
+}

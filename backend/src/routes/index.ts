@@ -9,7 +9,14 @@ import { AuditLog } from '../models/AuditLog';
 import { isConnected } from '../lib/mongo';
 import { createRequest, respondToRequest, generateVoicePrompt } from '../lib/consent';
 import { mockUsers, mockDevices, mockAlerts, mockRequests } from '../lib/mockData';
-import { sendSosAlertEmail, sendFallAlertEmail, sendConsentRequestEmail, sendConsentResponseEmail, sendFaceMismatchEmail } from '../lib/mailer';
+import {
+  sendSosAlertEmail, sendFallAlertEmail, sendConsentRequestEmail, sendConsentResponseEmail,
+  sendFaceMismatchEmail, sendStrangerAlertEmail, sendHazardAlertEmail,
+  sendDevicePairedEmail, sendDeviceOfflineEmail, sendDeviceLockedEmail, sendFirmwareUpdateEmail,
+  sendMemberInviteEmail, sendMemberJoinedEmail, sendMemberRemovedEmail,
+  sendConsentExpiredEmail, sendViewingStartedEmail, sendViewingEndedEmail,
+  sendAccountSuspendedEmail, sendNewLoginEmail,
+} from '../lib/mailer';
 
 const router = Router();
 
@@ -38,8 +45,15 @@ router.get('/users/:id', async (req, res) => {
 
 router.patch('/users/:id', async (req, res) => {
   if (isConnected()) {
+    const oldUser = await User.findById(req.params.id);
     const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!user) return res.status(404).json({ success: false, error: 'Not found' });
+
+    // Suspension email
+    if (oldUser?.status !== 'suspended' && user.status === 'suspended') {
+      sendAccountSuspendedEmail(user.email, user.name, req.body.suspendReason || 'Violation of terms of service').catch(() => {});
+    }
+
     res.json({ success: true, data: user });
   } else {
     res.json({ success: true, data: { ...mockUsers[0], ...req.body } });
@@ -71,7 +85,48 @@ router.get('/devices/:id', async (req, res) => {
 
 router.patch('/devices/:id', async (req, res) => {
   if (isConnected()) {
+    const oldDevice = await Device.findById(req.params.id);
     const device = await Device.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!device) return res.status(404).json({ success: false, error: 'Not found' });
+
+    // Trigger event-based emails
+    try {
+      const owner = await User.findById(device.userId);
+      if (owner) {
+        // Family head contact
+        const family = await Family.findOne({ blindUserId: device.userId });
+        let headEmail = owner.email;
+        if (family) {
+          const head = await User.findById(family.headId);
+          if (head) headEmail = head.email;
+        }
+
+        // Device went offline
+        if (oldDevice?.status === 'online' && device.status === 'offline') {
+          await sendDeviceOfflineEmail(headEmail, owner.name, device.name, new Date().toLocaleString('en-IN'));
+        }
+        // Device locked
+        if (req.body.locked === true) {
+          await sendDeviceLockedEmail(headEmail, owner.name, device.name, req.body.lockReason || 'Manual lock by Family Head');
+        }
+        // Firmware updated
+        if (req.body.firmware && oldDevice?.firmware !== req.body.firmware) {
+          await sendFirmwareUpdateEmail(headEmail, owner.name, device.name, req.body.firmware, req.body.firmwareNotes || 'Bug fixes and improvements');
+        }
+        // Device paired
+        if (!oldDevice?.userId && device.userId) {
+          await sendDevicePairedEmail(headEmail, owner.name, device.name, device.code);
+        }
+        // Low battery
+        if (req.body.battery !== undefined && req.body.battery <= 20 && (oldDevice?.battery ?? 100) > 20) {
+          const { sendLowBatteryEmail } = await import('../lib/mailer');
+          await sendLowBatteryEmail(headEmail, owner.name, req.body.battery);
+        }
+      }
+    } catch (e) {
+      console.error('Device event email failed:', (e as Error).message);
+    }
+
     res.json({ success: true, data: device });
   } else {
     res.json({ success: true, data: { ...mockDevices[0], ...req.body } });
@@ -105,9 +160,75 @@ router.post('/families/:id/members', async (req, res) => {
       joinedAt: new Date(),
     });
     await family.save();
+
+    // Send invitation email + notify head
+    try {
+      const head = await User.findById(family.headId);
+      const blindUser = await User.findById(family.blindUserId);
+      if (head && blindUser) {
+        await sendMemberInviteEmail(email, name, relation, head.name, blindUser.name);
+      }
+    } catch (e) {
+      console.error('Invite email failed:', (e as Error).message);
+    }
+
     res.json({ success: true, data: family });
   } else {
     res.json({ success: true, data: { name, email, relation, added: true } });
+  }
+});
+
+// POST /api/families/:id/members/:userId/join — member accepts invite
+router.post('/families/:id/members/:userId/join', async (req, res) => {
+  if (isConnected()) {
+    const family = await Family.findById(req.params.id);
+    if (!family) return res.status(404).json({ success: false, error: 'Family not found' });
+
+    const member = await User.findByIdAndUpdate(req.params.userId, { status: 'active' }, { new: true });
+    const m = family.members.find(mm => mm.userId.toString() === req.params.userId);
+    if (m) m.permissions = m.permissions; // already set
+
+    await family.save();
+
+    // Notify head that member joined
+    try {
+      const head = await User.findById(family.headId);
+      if (head && member) {
+        await sendMemberJoinedEmail(head.email, head.name, member.name, member.relation || 'family member');
+      }
+    } catch (e) {
+      console.error('Joined email failed:', (e as Error).message);
+    }
+
+    res.json({ success: true, data: family });
+  } else {
+    res.json({ success: true });
+  }
+});
+
+// DELETE /api/families/:id/members/:userId — remove member
+router.delete('/families/:id/members/:userId', async (req, res) => {
+  if (isConnected()) {
+    const family = await Family.findById(req.params.id);
+    if (!family) return res.status(404).json({ success: false, error: 'Family not found' });
+
+    const member = await User.findById(req.params.userId);
+    family.members = family.members.filter(mm => mm.userId.toString() !== req.params.userId);
+    await family.save();
+
+    // Notify removed member
+    try {
+      const head = await User.findById(family.headId);
+      if (head && member) {
+        await sendMemberRemovedEmail(member.email, member.name, member.relation || 'family member', head.name);
+      }
+    } catch (e) {
+      console.error('Removed email failed:', (e as Error).message);
+    }
+
+    res.json({ success: true, data: family });
+  } else {
+    res.json({ success: true });
   }
 });
 
@@ -163,6 +284,11 @@ router.post('/requests/:id/respond', async (req, res) => {
       const requester = await User.findById(result.fromUserId);
       if (blindUser && requester) {
         await sendConsentResponseEmail(requester.email, blindUser.name, accepted, result.durationMinutes);
+        if (accepted) {
+          await sendViewingStartedEmail(requester.email, blindUser.name, requester.name, result.durationMinutes);
+        } else if (result.revokedBy === 'timeout') {
+          await sendConsentExpiredEmail(requester.email, blindUser.name);
+        }
       }
     } catch (e) {
       console.error('Response email failed:', (e as Error).message);
@@ -191,28 +317,25 @@ router.post('/alerts', async (req, res) => {
     const alert = new Alert(req.body);
     await alert.save();
 
-    // Send automated emails to family members
+    // Send automated emails to family members for ALL alert types
     try {
       const family = await Family.findOne({ blindUserId: alert.userId });
       if (family) {
+        const recipients: Array<{ email: string }> = [];
         const head = await User.findById(family.headId);
-        if (head) {
-          const loc = alert.location?.address || 'Unknown location';
-          if (alert.type === 'sos') {
-            await sendSosAlertEmail(head.email, alert.userName, loc, alert.location?.lat || 0, alert.location?.lng || 0);
-          } else if (alert.type === 'fall') {
-            await sendFallAlertEmail(head.email, alert.userName, loc);
-          } else if (alert.type === 'face_mismatch') {
-            await sendFaceMismatchEmail(head.email, alert.userName, alert.userName);
-          }
-          // Also email all family members
-          for (const member of family.members) {
-            const mu = await User.findById(member.userId);
-            if (mu) {
-              if (alert.type === 'sos') await sendSosAlertEmail(mu.email, alert.userName, loc, alert.location?.lat || 0, alert.location?.lng || 0);
-              else if (alert.type === 'fall') await sendFallAlertEmail(mu.email, alert.userName, loc);
-            }
-          }
+        if (head) recipients.push(head);
+        for (const member of family.members) {
+          const mu = await User.findById(member.userId);
+          if (mu) recipients.push(mu);
+        }
+
+        const loc = alert.location?.address || 'Unknown location';
+        for (const r of recipients) {
+          if (alert.type === 'sos') await sendSosAlertEmail(r.email, alert.userName, loc, alert.location?.lat || 0, alert.location?.lng || 0);
+          else if (alert.type === 'fall') await sendFallAlertEmail(r.email, alert.userName, loc);
+          else if (alert.type === 'face_mismatch') await sendFaceMismatchEmail(r.email, alert.userName, alert.userName);
+          else if (alert.type === 'stranger') await sendStrangerAlertEmail(r.email, alert.userName, loc);
+          else if (alert.type === 'hazard') await sendHazardAlertEmail(r.email, alert.userName, alert.notes || 'Unknown hazard', loc);
         }
       }
     } catch (e) {

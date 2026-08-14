@@ -7,7 +7,7 @@ import { Family } from '../models/Family';
 import { isConnected } from '../lib/mongo';
 import { mockUsers } from '../lib/mockData';
 import { authMiddleware } from '../middleware/auth';
-import { sendPasswordChangedEmail, sendWelcomeEmail } from '../lib/mailer';
+import { sendPasswordChangedEmail, sendWelcomeEmail, sendNewLoginEmail } from '../lib/mailer';
 
 const router = Router();
 
@@ -98,6 +98,10 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ success: false, error: 'Password required. Use password login.' });
       }
       // If no password set, passkey-style login (email only) is allowed
+
+      // Send new login notification email
+      const userAgent = (req.headers['user-agent'] || 'Unknown device').toString().substring(0, 60);
+      sendNewLoginEmail(user.email, user.name, userAgent, req.ip || 'Unknown location').catch(() => {});
 
       const token = signToken({ userId: user._id.toString(), email: user.email, role: user.role });
       return res.json({ success: true, data: { token, user } });
