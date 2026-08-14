@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChangePasswordCard } from '../components/ChangePasswordCard';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Page =
@@ -596,6 +597,7 @@ function Security() {
 function Settings() {
   return (
     <div>
+    <ChangePasswordCard />
       <Topbar title="Settings" subtitle="Family and account preferences" />
       <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="panel-header"><div><div className="panel-title">Notifications</div></div></div>

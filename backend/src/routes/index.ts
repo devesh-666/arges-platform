@@ -9,6 +9,7 @@ import { AuditLog } from '../models/AuditLog';
 import { isConnected } from '../lib/mongo';
 import { createRequest, respondToRequest, generateVoicePrompt } from '../lib/consent';
 import { mockUsers, mockDevices, mockAlerts, mockRequests } from '../lib/mockData';
+import { sendSosAlertEmail, sendFallAlertEmail, sendConsentRequestEmail, sendConsentResponseEmail, sendFaceMismatchEmail } from '../lib/mailer';
 
 const router = Router();
 
@@ -128,6 +129,21 @@ router.post('/requests', async (req, res) => {
   if (isConnected()) {
     const reqDoc = await createRequest({ fromUserId, fromUserName, fromUserRelation, toUserId, type, durationMinutes, message });
     const voicePrompt = generateVoicePrompt(fromUserRelation, fromUserName, type, durationMinutes);
+
+    // Email the family head about the consent request
+    try {
+      const blindUser = await User.findById(toUserId);
+      const family = await Family.findOne({ blindUserId: toUserId });
+      if (family && blindUser) {
+        const head = await User.findById(family.headId);
+        if (head) {
+          await sendConsentRequestEmail(head.email, fromUserName, fromUserRelation, blindUser.name, durationMinutes);
+        }
+      }
+    } catch (e) {
+      console.error('Consent email failed:', (e as Error).message);
+    }
+
     res.json({ success: true, data: reqDoc, voicePrompt });
   } else {
     const voicePrompt = generateVoicePrompt(fromUserRelation || 'brother', fromUserName || 'Karthik', type || 'video_audio', durationMinutes || 15);
@@ -140,6 +156,18 @@ router.post('/requests/:id/respond', async (req, res) => {
   if (isConnected()) {
     const result = await respondToRequest(req.params.id, accepted);
     if (!result) return res.status(404).json({ success: false, error: 'Request not found or already responded' });
+
+    // Email the requester about the response
+    try {
+      const blindUser = await User.findById(result.toUserId);
+      const requester = await User.findById(result.fromUserId);
+      if (blindUser && requester) {
+        await sendConsentResponseEmail(requester.email, blindUser.name, accepted, result.durationMinutes);
+      }
+    } catch (e) {
+      console.error('Response email failed:', (e as Error).message);
+    }
+
     res.json({ success: true, data: result });
   } else {
     res.json({ success: true, data: { _id: req.params.id, status: accepted ? 'active' : 'declined' } });
@@ -162,6 +190,35 @@ router.post('/alerts', async (req, res) => {
   if (isConnected()) {
     const alert = new Alert(req.body);
     await alert.save();
+
+    // Send automated emails to family members
+    try {
+      const family = await Family.findOne({ blindUserId: alert.userId });
+      if (family) {
+        const head = await User.findById(family.headId);
+        if (head) {
+          const loc = alert.location?.address || 'Unknown location';
+          if (alert.type === 'sos') {
+            await sendSosAlertEmail(head.email, alert.userName, loc, alert.location?.lat || 0, alert.location?.lng || 0);
+          } else if (alert.type === 'fall') {
+            await sendFallAlertEmail(head.email, alert.userName, loc);
+          } else if (alert.type === 'face_mismatch') {
+            await sendFaceMismatchEmail(head.email, alert.userName, alert.userName);
+          }
+          // Also email all family members
+          for (const member of family.members) {
+            const mu = await User.findById(member.userId);
+            if (mu) {
+              if (alert.type === 'sos') await sendSosAlertEmail(mu.email, alert.userName, loc, alert.location?.lat || 0, alert.location?.lng || 0);
+              else if (alert.type === 'fall') await sendFallAlertEmail(mu.email, alert.userName, loc);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Email notification failed:', (e as Error).message);
+    }
+
     res.json({ success: true, data: alert });
   } else {
     res.json({ success: true, data: { _id: 'a' + Date.now(), ...req.body, status: 'unresolved', createdAt: new Date() } });

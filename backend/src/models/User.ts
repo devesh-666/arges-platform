@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IUser extends Document {
   name: string;
   email: string;
+  password: string;
   phone: string;
   role: 'blind' | 'family_head' | 'family_member' | 'helper' | 'admin';
   relation?: string;
@@ -38,6 +39,7 @@ export interface IUser extends Document {
 const userSchema = new Schema<IUser>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String, default: '' }, // hashed with bcrypt
   phone: { type: String, default: '' },
   role: { type: String, enum: ['blind', 'family_head', 'family_member', 'helper', 'admin'], default: 'family_head' },
   relation: { type: String, default: '' },

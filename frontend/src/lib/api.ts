@@ -43,6 +43,9 @@ export const api = {
     signup: (data: unknown) => api.post<{ success: boolean; data: { token: string; user: unknown } }>('/auth/signup', data),
     login: (email: string) => api.post<{ success: boolean; data: { token: string; user: unknown } }>('/auth/login', { email }),
     me: () => api.get<{ success: boolean; data: unknown }>('/auth/me'),
+    setPassword: (newPassword: string) => api.post<{ success: boolean }>('/auth/set-password', { newPassword }),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      api.post<{ success: boolean }>('/auth/change-password', { currentPassword, newPassword }),
   },
 
   // Users
