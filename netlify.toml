@@ -1,0 +1,44 @@
+# Repo-root Netlify config.
+#
+# This repo holds both the frontend and the backend, so a Git-connected
+# Netlify build starting at the root finds no framework and no build step and
+# publishes the root directory — which has no index.html, giving a 404 on every
+# route. Setting `base` points the build at the frontend workspace.
+#
+# `publish` is resolved relative to `base`, so "dist" means frontend/dist.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA routing — every route is served by index.html so client-side
+# routing (/admin, /family, ...) works on direct load and refresh.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# 3D model MIME type
+[[headers]]
+  for = "/*.glb"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Cache-Control = "public, max-age=31536000"
+
+# Cache fingerprinted static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"

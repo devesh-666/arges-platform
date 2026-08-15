@@ -1,0 +1,5 @@
+# SPA fallback. This file is copied into dist/ by Vite, so the rule ships with
+# the build output itself and applies no matter which netlify.toml Netlify
+# resolves (repo root vs. base directory) or whether the deploy came from CI or
+# the CLI. Without it, loading /admin directly returns a 404.
+/*  /index.html  200
