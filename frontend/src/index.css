@@ -4,6 +4,29 @@
 /* The full ARGES design system from the HTML prototype */
 @import "./arges.css";
 
+/* Glass surface utilities used by HowItWorks3D and GlassPanel. These class
+   names were referenced in JSX but never defined, so those surfaces rendered
+   flat (no background, blur or border). Declared in the components layer so
+   Tailwind border/background utilities on the same element still win. */
+@layer components {
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(1.5);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5);
+    border: 0.5px solid var(--glass-border);
+  }
+  /* Specular highlight along the top edge — the glass "reflection". */
+  .specular { position: relative; overflow: hidden; }
+  .specular::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
+    pointer-events: none;
+  }
+}
+
 /* Role theme overrides (for dashboards) */
 .theme-admin { --orange: #FF6B1A; --orange-bright: #FF8533; --orange-glow: rgba(255,107,26,0.4); }
 .theme-head { --orange: #4CAF50; --orange-bright: #66BB6A; --orange-glow: rgba(76,175,80,0.4); }

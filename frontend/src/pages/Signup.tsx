@@ -46,7 +46,10 @@ export function Signup() {
   };
 
   return (
-    <div className="theme-admin min-h-screen p-6 pt-16 flex flex-col items-center" style={{ cursor: 'none' }}>
+    // Padding is set inline, not via Tailwind: the `*{padding:0}` reset in arges.css is
+    // unlayered, so it outranks Tailwind's layered utilities and `p-6 pt-16` was a no-op.
+    // These values match the prototype's wrapper (60px 24px 40px).
+    <div className="theme-admin min-h-screen flex flex-col items-center" style={{ cursor: 'none', padding: '60px 24px 40px' }}>
       <div className="cursor-dot" />
       <div className="cursor-ring" />
 
@@ -108,7 +111,7 @@ export function Signup() {
                 <div className="form-group"><label className="form-label">Your Relation to Blind User</label><select className="form-select"><option>Mother</option><option>Father</option><option>Spouse</option><option>Sibling</option><option>Child</option><option>Guardian</option><option>Grandparent</option><option>Other</option></select></div>
                 <div className="form-group"><label className="form-label">Preferred Language</label><select className="form-select"><option>English</option><option>Hindi</option><option>Tamil</option><option>Telugu</option><option>Marathi</option><option>Bengali</option><option>Kannada</option></select></div>
               </div>
-              <button className="btn" onClick={() => setStep(1)} style={{ width: '100%' }}>Continue</button>
+              <button className="btn" onClick={() => setStep(1)} style={{ width: '100%' }}>Continue →</button>
             </motion.div>
           )}
 
@@ -138,7 +141,7 @@ export function Signup() {
                   </div>
                   <p style={{ color: '#4CAF50', fontWeight: 600, fontSize: '0.88rem' }}>Device Paired!</p>
                   <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '4px' }}>Device ID: ARG-7K3M9-P2Q8R-4X - Firmware: v2.1.3</p>
-                  <button className="btn" onClick={() => setStep(2)} style={{ width: '100%', marginTop: '20px' }}>Continue</button>
+                  <button className="btn" onClick={() => setStep(2)} style={{ width: '100%', marginTop: '20px' }}>Continue →</button>
                 </div>
               ) : method === 'nfc' ? (
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
@@ -175,7 +178,7 @@ export function Signup() {
                 </div>
               )}
 
-              <button onClick={() => setStep(0)} className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px' }}>Back</button>
+              <button onClick={() => setStep(0)} className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px' }}>← Back</button>
             </motion.div>
           )}
 
@@ -192,8 +195,8 @@ export function Signup() {
               <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>GPS always visible to family</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family can see location without asking</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
               <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Video/audio requires consent</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Blind user must accept each viewing request</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
               <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Emergency auto-access</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family gets instant access on fall/SOS</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
-              <button className="btn" onClick={handleSubmit} style={{ width: '100%', marginTop: '20px' }}>Create Family</button>
-              <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px', marginTop: '8px' }}>Back</button>
+              <button className="btn" onClick={handleSubmit} style={{ width: '100%', marginTop: '20px' }}>Create Family →</button>
+              <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px', marginTop: '8px' }}>← Back</button>
             </motion.div>
           )}
 
@@ -202,12 +205,16 @@ export function Signup() {
               <svg viewBox="0 0 24 24" width="80" height="80" style={{ stroke: '#4CAF50', fill: 'none', strokeWidth: 1.5, margin: '0 auto 20px', filter: 'drop-shadow(0 0 20px rgba(76,175,80,0.3))' }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.4rem', marginBottom: '6px' }}>Family Created!</h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: '28px', lineHeight: 1.5 }}>Your family tree is set up. You're the Family Head with full management access.</p>
-              <Link to="/family"><button className="btn" style={{ width: '100%', marginBottom: '12px' }}>Go to Family Dashboard</button></Link>
+              <Link to="/family"><button className="btn" style={{ width: '100%', marginBottom: '12px' }}>Go to Family Dashboard →</button></Link>
               <Link to="/"><button className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px' }}>Back to Home</button></Link>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      <footer className="auth-foot">
+        © 2026 ARGES · Forging Light. Empowering Sight. · <Link to="/">Home</Link>
+      </footer>
     </div>
   );
 }

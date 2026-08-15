@@ -42,8 +42,10 @@ export function Login() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: EASE }}
-        className="card max-w-[420px] w-full"
-        style={{ textAlign: 'center' }}
+        className="card"
+        // Inline, not Tailwind: `.card{max-width:520px}` in arges.css is unlayered and
+        // outranks the layered `max-w-[420px]` utility. 420px matches the prototype.
+        style={{ textAlign: 'center', maxWidth: 420, width: '100%' }}
       >
         <div className="logo" style={{ marginBottom: '28px' }}>
           <svg viewBox="0 0 100 100" width="56" height="56" style={{ filter: 'drop-shadow(0 0 16px var(--orange-glow))', margin: '0 auto' }}>
@@ -80,13 +82,13 @@ export function Login() {
           className="btn"
           style={{ width: '100%', marginBottom: '12px' }}
         >
-          {loading ? 'Signing in...' : 'Send Magic Link'}
+          {loading ? 'Signing in...' : 'Send Magic Link →'}
         </motion.button>
 
         {msg && <p style={{ fontSize: '0.82rem', color: msg.includes('sent') ? 'var(--orange)' : '#EF5350', marginTop: '8px' }}>{msg}</p>}
 
         <div style={{ marginTop: '24px', fontSize: '0.82rem', color: 'var(--muted)' }}>
-          New to ARGES? <Link to="/signup" style={{ color: 'var(--orange)', fontWeight: 600 }}>Create a family account</Link>
+          New to ARGES? <Link to="/signup" style={{ color: 'var(--orange)', fontWeight: 600 }}>Create a family account →</Link>
         </div>
 
         <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', fontSize: '0.75rem', color: 'var(--muted-2)', border: '0.5px solid var(--glass-border)', background: 'var(--glass)' }}>

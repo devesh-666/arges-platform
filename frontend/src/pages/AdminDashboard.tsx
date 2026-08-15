@@ -333,36 +333,46 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
             </div>
             <a className="panel-action" onClick={() => setPage('users')} style={{ cursor: 'pointer' }}>View all →</a>
           </div>
-          <table>
-            <thead>
-              <tr><th>User</th><th>Type</th><th>Status</th><th>Joined</th></tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((u) => (
-                <tr key={u.init}>
-                  <td>
-                    <div className="user-cell">
-                      <div className={`user-avatar ${u.cls}`}>{u.init}</div>
-                      <div>
-                        <div className="user-name">{u.name}</div>
-                        <div className="user-meta">{u.email}</div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr><th>User</th><th>Type</th><th>Status</th><th>Joined</th><th /></tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((u) => (
+                  <tr key={u.init}>
+                    <td>
+                      <div className="user-cell">
+                        <div className={`user-avatar ${u.cls}`}>{u.init}</div>
+                        <div>
+                          <div className="user-name">{u.name}</div>
+                          <div className="user-meta">{u.email}</div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td>{u.type}</td>
-                  <td>{u.status}</td>
-                  <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.78rem', color: 'var(--muted)' }}>{u.joined}</td>
-                </tr>
-              ))}
-              {filteredUsers.length === 0 && (
-                <tr>
-                  <td colSpan={4} style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '24px 0', textAlign: 'center' }}>
-                    No users match “{query}”.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    </td>
+                    <td>{u.type}</td>
+                    <td>{u.status}</td>
+                    <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.78rem', color: 'var(--muted)' }}>{u.joined}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <button className="action-btn" title={`View ${u.name}`} aria-label={`View ${u.name}`} onClick={() => setPage('users')}>
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                      </button>
+                      <button className="action-btn danger" title={`Remove ${u.name}`} aria-label={`Remove ${u.name}`}>
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '24px 0', textAlign: 'center' }}>
+                      No users match “{query}”.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </motion.div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

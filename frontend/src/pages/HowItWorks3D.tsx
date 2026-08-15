@@ -48,7 +48,7 @@ export function HowItWorks3D() {
       <section className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 pt-32 pb-10 relative z-10">
         <div className="font-mono text-xs tracking-[0.3em] uppercase text-[#FF6B1A] mb-6">/ How It Works</div>
         <h1 className="font-display font-extrabold text-[clamp(2.5rem,7vw,5rem)] leading-[0.95] tracking-tight">
-          From voice to answer<br />in <span className="gradient-text">under 1.5 seconds.</span>
+          From voice to answer<br />in <span className="grad-text">under 1.5 seconds.</span>
         </h1>
         <p className="max-w-[560px] text-[#9999AA] text-base mt-5 leading-relaxed">
           Scroll to watch the ARGES glasses come alive. Each step shows exactly what happens inside the device.
@@ -134,7 +134,7 @@ export function HowItWorks3D() {
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} initial="hidden" whileInView="visible" viewport={{ once: true }}
           className="max-w-[700px] p-20 rounded-[40px] glass text-center"
           style={{ background: 'radial-gradient(circle at 50% 0%, rgba(255,107,26,0.12), transparent 60%), var(--glass)' }}>
-          <h2 className="font-display font-bold text-[clamp(2rem,4vw,3.2rem)] tracking-tight mb-5">That's <span className="gradient-text">ARGES.</span></h2>
+          <h2 className="font-display font-bold text-[clamp(2rem,4vw,3.2rem)] tracking-tight mb-5">That's <span className="grad-text">ARGES.</span></h2>
           <p className="text-[#9999AA] mb-9 text-lg">Voice in. Answer out. Under 1.5 seconds. Fully offline core AI. Built for India.</p>
           <div className="flex gap-3 justify-center">
             <Link to="/signup" className="px-9 py-4 rounded-full font-semibold bg-[#FF6B1A] text-black" style={{ boxShadow: '0 8px 32px rgba(255,107,26,0.4)' }}>Get ARGES →</Link>
