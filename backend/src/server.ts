@@ -14,7 +14,30 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:8765', 'http://127.0.0.1:5173'] }));
+
+// Allowed browser origins. Extra origins can be added via CORS_ORIGINS
+// (comma-separated) without a code change — e.g. Netlify deploy previews.
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:8765',
+  'http://localhost:8766',
+  'http://127.0.0.1:5173',
+  'https://arges-vision.netlify.app',
+  ...(process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) ?? []),
+];
+
+app.use(cors({
+  origin(origin, callback) {
+    // Non-browser callers (curl, health checks, server-to-server) send no Origin.
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Netlify deploy previews: <name>--arges-vision.netlify.app
+    if (/^https:\/\/[a-z0-9-]+--arges-vision\.netlify\.app$/.test(origin)) return callback(null, true);
+    // Reject by omitting the CORS header rather than throwing — the browser still
+    // blocks the response, but the request doesn't surface as a 500 in the logs.
+    return callback(null, false);
+  },
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 

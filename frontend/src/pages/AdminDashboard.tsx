@@ -120,7 +120,7 @@ function AdminGate({ onAuthed }: { onAuthed: () => void }) {
     >
       <div style={{ textAlign: 'center', maxWidth: 400 }}>
         <div style={{ marginBottom: 24 }}>
-          <svg viewBox="0 0 100 100" style={{ width: 64, height: 64, filter: 'drop-shadow(0 0 20px rgba(255,107,26,0.4))' }}>
+          <svg viewBox="0 0 100 100" style={{ width: 64, height: 64, margin: '0 auto', filter: 'drop-shadow(0 0 20px rgba(255,107,26,0.4))' }}>
             <path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z" stroke="#FF6B1A" strokeWidth="3" fill="none" />
             <circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none" />
             <circle cx="50" cy="50" r="3.5" fill="#FF6B1A" />
@@ -244,8 +244,18 @@ function Topbar({ title, subtitle, children }: { title: string; subtitle: string
   );
 }
 
+/* Shared device fixtures — rendered on both the Dashboard overview and the Devices page. */
+const DASHBOARD_DEVICES = [
+  { id: 'ARGES-0014', user: 'Ravi Kumar', fw: 'v2.1.3', status: 'online', bat: '87%', temp: '38°C', up: '2h' },
+  { id: 'ARGES-0089', user: 'Priya Devi', fw: 'v2.1.3', status: 'updating', bat: '42%', temp: '41°C', up: '6h' },
+  { id: 'ARGES-0234', user: 'Mohammed Irfan', fw: 'v2.0.8', status: 'offline', bat: '—', temp: '—', up: '2d' },
+  { id: 'ARGES-0512', user: 'Anjali Rao', fw: 'v2.1.3', status: 'online', bat: '94%', temp: '35°C', up: '8h' },
+];
+const DEVICE_STATUS_COLOR: Record<string, string> = { online: 'green', offline: 'red', updating: 'yellow' };
+
 /* ============================ DASHBOARD ============================ */
 function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
+  const [query, setQuery] = useState('');
   const stats = [
     { icon: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z', color: 'orange', value: '923', label: 'Active Blind Users', trend: '↑ 47 this week' },
     { icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', color: 'blue', value: '1,924', label: 'Paired Devices (Online)', trend: '↑ 12 today' },
@@ -268,6 +278,11 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
     { color: '#42A5F5', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', title: <><strong>Lakshmi Ammal</strong> accepted viewing request</>, time: '45 min ago' },
   ];
 
+  const q = query.trim().toLowerCase();
+  const filteredUsers = q
+    ? recentUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+    : recentUsers;
+
   const health = [
     { dot: 'green', label: 'API Server (FastAPI)', val: '42ms · 99.9%' },
     { dot: 'green', label: 'Database (Supabase)', val: '8ms · 99.9%' },
@@ -279,6 +294,17 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
   return (
     <div>
       <Topbar title="Dashboard" subtitle="System overview · Real-time monitoring">
+        <div className="admin-search">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Search users, devices, families..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
         <button className="btn btn-ghost">+ Add User</button>
         <button className="btn">Broadcast Alert</button>
       </Topbar>
@@ -312,7 +338,7 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
               <tr><th>User</th><th>Type</th><th>Status</th><th>Joined</th></tr>
             </thead>
             <tbody>
-              {recentUsers.map((u) => (
+              {filteredUsers.map((u) => (
                 <tr key={u.init}>
                   <td>
                     <div className="user-cell">
@@ -328,6 +354,13 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
                   <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.78rem', color: 'var(--muted)' }}>{u.joined}</td>
                 </tr>
               ))}
+              {filteredUsers.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '24px 0', textAlign: 'center' }}>
+                    No users match “{query}”.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </motion.div>
@@ -368,6 +401,36 @@ function Dashboard({ setPage }: { setPage: (p: Page) => void }) {
           </motion.div>
         </div>
       </div>
+
+      <motion.div className="panel" {...item}>
+        <div className="panel-header">
+          <div>
+            <div className="panel-title">Connected Devices</div>
+            <div className="panel-sub">1,924 devices online · 87 offline</div>
+          </div>
+          <a className="panel-action" onClick={() => setPage('devices')} style={{ cursor: 'pointer' }}>View all →</a>
+        </div>
+        <div className="device-grid">
+          {DASHBOARD_DEVICES.map((d) => (
+            <motion.div key={d.id} className="device-card" whileHover={{ y: -4 }}>
+              <div className="device-header">
+                <div>
+                  <div className="device-name">{d.id}</div>
+                  <div className="device-user">{d.user} · {d.fw}</div>
+                </div>
+                <span className={`badge ${DEVICE_STATUS_COLOR[d.status]}`}>
+                  <span className="dot" />{d.status.charAt(0).toUpperCase() + d.status.slice(1)}
+                </span>
+              </div>
+              <div className="device-stats">
+                <div className="device-stat"><div className="v">{d.bat}</div><div className="l">Battery</div></div>
+                <div className="device-stat"><div className="v">{d.temp}</div><div className="l">Temp</div></div>
+                <div className="device-stat"><div className="v">{d.up}</div><div className="l">{d.status === 'offline' ? 'Last seen' : 'Uptime'}</div></div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -570,13 +633,8 @@ function DevicesPage() {
     { icon: 'M2 3h20v14H2z M8 21h8', color: 'blue', value: 'v2.1.3', label: 'Latest Firmware' },
     { icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3', color: 'purple', value: '1,807', label: 'Devices on Latest FW' },
   ];
-  const devices = [
-    { id: 'ARGES-0014', user: 'Ravi Kumar', fw: 'v2.1.3', status: 'online', bat: '87%', temp: '38°C', up: '2h' },
-    { id: 'ARGES-0089', user: 'Priya Devi', fw: 'v2.1.3', status: 'updating', bat: '42%', temp: '41°C', up: '6h' },
-    { id: 'ARGES-0234', user: 'Mohammed Irfan', fw: 'v2.0.8', status: 'offline', bat: '—', temp: '—', up: '2d' },
-    { id: 'ARGES-0512', user: 'Anjali Rao', fw: 'v2.1.3', status: 'online', bat: '94%', temp: '35°C', up: '8h' },
-  ];
-  const statusColor: Record<string, string> = { online: 'green', offline: 'red', updating: 'yellow' };
+  const devices = DASHBOARD_DEVICES;
+  const statusColor = DEVICE_STATUS_COLOR;
   return (
     <div>
       <Topbar title="Devices" subtitle="All ARGES hardware units · 1,924 online · 87 offline">
@@ -1023,8 +1081,8 @@ function SettingsPage() {
   ];
   return (
     <div>
-    <ChangePasswordCard />
       <Topbar title="Settings" subtitle="Admin configuration and feature flags" />
+      <ChangePasswordCard />
       <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="panel-header">
           <div><div className="panel-title">Feature Flags</div><div className="panel-sub">Toggle features globally</div></div>

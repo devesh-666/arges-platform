@@ -157,8 +157,8 @@ function RequestCard({ r }: { r: typeof REQUESTS[number] }) {
         <span className={`badge ${r.urgent ? 'red' : 'yellow'}`}><span className="dot" />{r.urgent ? 'Urgent' : 'Waiting'}</span>
       </div>
       <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.5 }}>{r.msg}</div>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button className="btn" style={{ background: 'var(--green)', color: '#000' }}>Accept &amp; Help →</button>
+      <div className="request-row">
+        <button className="btn" style={{ background: 'var(--green-bright)', color: '#000', boxShadow: '0 4px 16px rgba(76,175,80,0.3)' }}>Accept &amp; Help →</button>
         <button className="btn btn-ghost btn-sm">Decline</button>
       </div>
     </motion.div>
@@ -383,8 +383,8 @@ function Security() {
 function Settings() {
   return (
     <div>
-    <ChangePasswordCard />
       <Topbar title="Settings" subtitle="Helper preferences" />
+      <ChangePasswordCard />
       <motion.div className="panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="panel-header"><div><div className="panel-title">Availability</div></div></div>
         <div style={{ padding: '12px 0', borderBottom: '0.5px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
