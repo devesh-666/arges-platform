@@ -22,17 +22,22 @@ const allowedOrigins = [
   'http://localhost:8765',
   'http://localhost:8766',
   'http://127.0.0.1:5173',
+  // Current production site.
+  'https://arges-vision-web.netlify.app',
+  // Previous site, kept so any existing links keep working.
   'https://arges-vision.netlify.app',
   ...(process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) ?? []),
 ];
+
+// Netlify deploy previews are <branch-or-hash>--<site>.netlify.app.
+const NETLIFY_PREVIEW = /^https:\/\/[a-z0-9-]+--arges-vision(-web)?\.netlify\.app$/;
 
 app.use(cors({
   origin(origin, callback) {
     // Non-browser callers (curl, health checks, server-to-server) send no Origin.
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Netlify deploy previews: <name>--arges-vision.netlify.app
-    if (/^https:\/\/[a-z0-9-]+--arges-vision\.netlify\.app$/.test(origin)) return callback(null, true);
+    if (NETLIFY_PREVIEW.test(origin)) return callback(null, true);
     // Reject by omitting the CORS header rather than throwing — the browser still
     // blocks the response, but the request doesn't surface as a 500 in the logs.
     return callback(null, false);

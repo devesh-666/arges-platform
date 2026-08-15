@@ -30,3 +30,6 @@ npm-debug.log*
 
 # Misc
 *.pem
+
+# Local Netlify folder
+.netlify
