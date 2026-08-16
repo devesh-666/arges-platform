@@ -5,14 +5,18 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
+export type SpinState = { y: number; x: number; scale: number };
+
 export function GlassesViewer3D({
   modelUrl = '/models/arges_glasses.glb',
   autoRotate = true,
   className = '',
+  spinRef,
 }: {
   modelUrl?: string;
   autoRotate?: boolean;
   className?: string;
+  spinRef?: { current: SpinState };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +56,8 @@ export function GlassesViewer3D({
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     let model: THREE.Group | null = null;
+    let baseScale = 1;
+    const baseCenter = new THREE.Vector3();
 
     loader.load(
       modelUrl,
@@ -59,11 +65,11 @@ export function GlassesViewer3D({
         model = gltf.scene;
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
+        baseCenter.copy(box.getCenter(new THREE.Vector3()));
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2.5 / maxDim;
-        model.scale.setScalar(scale);
-        model.position.sub(center.multiplyScalar(scale));
+        baseScale = 2.5 / maxDim;
+        model.scale.setScalar(baseScale);
+        model.position.copy(baseCenter).multiplyScalar(-baseScale);
         scene.add(model);
       },
       undefined,
@@ -76,7 +82,7 @@ export function GlassesViewer3D({
     controls.dampingFactor = 0.08;
     controls.enableZoom = false;
     controls.enablePan = false;
-    controls.autoRotate = autoRotate;
+    controls.autoRotate = autoRotate && !spinRef;
     controls.autoRotateSpeed = 0.8;
     controls.minPolarAngle = Math.PI * 0.25;
     controls.maxPolarAngle = Math.PI * 0.75;
@@ -95,6 +101,14 @@ export function GlassesViewer3D({
     const animate = () => {
       raf = requestAnimationFrame(animate);
       controls.update();
+      if (spinRef && model) {
+        const { y, x, scale } = spinRef.current;
+        model.rotation.y = y;
+        model.rotation.x = x;
+        const s = baseScale * scale;
+        model.scale.setScalar(s);
+        model.position.copy(baseCenter).multiplyScalar(-s);
+      }
       renderer.render(scene, camera);
     };
     animate();
@@ -109,7 +123,7 @@ export function GlassesViewer3D({
         container.removeChild(renderer.domElement);
       }
     };
-  }, [modelUrl, autoRotate]);
+  }, [modelUrl, autoRotate, spinRef]);
 
   return <div ref={containerRef} className={className} style={{ width: '100%', height: '100%' }} />;
 }

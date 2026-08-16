@@ -69,7 +69,7 @@ export function StatCard({
       <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-4 border', colors[accent])}>
         {icon}
       </div>
-      <div className="font-display font-bold text-2xl tracking-tight">{value}</div>
+      <div className="font-display font-semibold text-2xl tracking-tight">{value}</div>
       <div className="text-[0.78rem] text-[#8B8B9A] mt-1">{label}</div>
       {trend && (
         <div className={cn('text-[0.72rem] mt-2 font-mono', trend.startsWith('↑') ? 'text-[#4CAF50]' : 'text-[#EF5350]')}>

@@ -57,7 +57,7 @@ export function DashboardLayout({
           className="sticky top-0 h-screen overflow-y-auto p-6"
           style={{ background: 'rgba(5,5,12,0.6)', backdropFilter: 'blur(40px)', borderRight: '0.5px solid rgba(255,255,255,0.06)' }}
         >
-          <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg mb-1.5 px-2">
+          <Link to="/" className="flex items-center gap-2.5 font-display font-semibold text-lg tracking-tight mb-1.5 px-2">
             <ArgesLogo size={26} color="var(--accent)" /> ARGES
           </Link>
           <div className="font-mono text-[0.62rem] tracking-[0.2em] uppercase text-[var(--accent)] px-2 mb-7">{roleLabel}</div>

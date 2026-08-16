@@ -9,6 +9,11 @@
    flat (no background, blur or border). Declared in the components layer so
    Tailwind border/background utilities on the same element still win. */
 @layer components {
+  /* Premium SaaS display face (Space Grotesk). Real weight cuts exist, so
+     Tailwind font-weight / tracking utilities compose normally. */
+  .font-display {
+    font-family: var(--font-display);
+  }
   .glass {
     background: var(--glass);
     backdrop-filter: blur(40px) saturate(1.5);

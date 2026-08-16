@@ -93,14 +93,14 @@ export function Signup() {
             <circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none"/>
             <circle cx="50" cy="50" r="3.5" fill="#FF6B1A"/>
           </svg>
-          <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.5rem', marginTop: '8px' }}>ARGES Vision</h1>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.5rem', marginTop: '8px' }}>ARGES Vision</h1>
           <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.65rem', color: 'var(--orange)', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: '4px' }}>Create Family Account</div>
         </div>
 
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="s0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Create your account</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Create your account</h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: '28px', lineHeight: 1.5 }}>You'll be the <strong style={{ color: 'var(--orange-bright)' }}>Family Head</strong> — you manage the family tree, add members, and control device access.</p>
               <div className="form-row">
                 <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" placeholder="e.g. Lakshmi Ammal" /></div>
@@ -117,7 +117,7 @@ export function Signup() {
 
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Pair your ARGES glasses</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Pair your ARGES glasses</h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: '24px' }}>Verify your device to link it to your family. Choose your preferred method below.</p>
 
               <div className="method-tabs">
@@ -184,7 +184,7 @@ export function Signup() {
 
           {step === 2 && (
             <motion.div key="s2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Add the blind user</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.4rem', marginBottom: '8px' }}>Add the blind user</h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: '28px' }}>Who will be wearing the ARGES glasses? You'll manage their device and can add more family members after setup.</p>
               <div className="form-row">
                 <div className="form-group"><label className="form-label">Blind User's Name</label><input className="form-input" placeholder="e.g. Ravi Kumar" /></div>
@@ -192,9 +192,9 @@ export function Signup() {
               </div>
               <div className="form-group"><label className="form-label">Their Phone (for setup assistance)</label><input className="form-input" placeholder="+91 ..." /></div>
               <div className="form-group"><label className="form-label">Privacy Preferences</label></div>
-              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>GPS always visible to family</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family can see location without asking</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
-              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Video/audio requires consent</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Blind user must accept each viewing request</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
-              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Emergency auto-access</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family gets instant access on fall/SOS</div></div><div className="toggle on" onClick={e => (e.target as HTMLElement).classList.toggle('on')} /></div>
+              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>GPS always visible to family</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family can see location without asking</div></div><button type="button" role="switch" aria-checked="true" aria-label="GPS always visible to family" className="toggle on" onClick={e => { const el = e.currentTarget as HTMLElement; el.classList.toggle('on'); el.setAttribute('aria-checked', el.classList.contains('on') ? 'true' : 'false'); }} /></div>
+              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Video/audio requires consent</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Blind user must accept each viewing request</div></div><button type="button" role="switch" aria-checked="true" aria-label="Video and audio require consent" className="toggle on" onClick={e => { const el = e.currentTarget as HTMLElement; el.classList.toggle('on'); el.setAttribute('aria-checked', el.classList.contains('on') ? 'true' : 'false'); }} /></div>
+              <div className="toggle-row"><div><div style={{ fontSize: '0.85rem' }}>Emergency auto-access</div><div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Family gets instant access on fall/SOS</div></div><button type="button" role="switch" aria-checked="true" aria-label="Emergency auto-access on fall or SOS" className="toggle on" onClick={e => { const el = e.currentTarget as HTMLElement; el.classList.toggle('on'); el.setAttribute('aria-checked', el.classList.contains('on') ? 'true' : 'false'); }} /></div>
               <button className="btn" onClick={handleSubmit} style={{ width: '100%', marginTop: '20px' }}>Create Family →</button>
               <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px', marginTop: '8px' }}>← Back</button>
             </motion.div>
@@ -203,7 +203,7 @@ export function Signup() {
           {step === 3 && (
             <motion.div key="s3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center', padding: '40px 0' }}>
               <svg viewBox="0 0 24 24" width="80" height="80" style={{ stroke: '#4CAF50', fill: 'none', strokeWidth: 1.5, margin: '0 auto 20px', filter: 'drop-shadow(0 0 20px rgba(76,175,80,0.3))' }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.4rem', marginBottom: '6px' }}>Family Created!</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.4rem', marginBottom: '6px' }}>Family Created!</h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', marginBottom: '28px', lineHeight: 1.5 }}>Your family tree is set up. You're the Family Head with full management access.</p>
               <Link to="/family"><button className="btn" style={{ width: '100%', marginBottom: '12px' }}>Go to Family Dashboard →</button></Link>
               <Link to="/"><button className="btn btn-ghost" style={{ width: '100%', fontSize: '0.82rem', padding: '10px' }}>Back to Home</button></Link>

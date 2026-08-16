@@ -40,7 +40,7 @@ export function HelperDashboard() {
       <div className="cursor-ring" />
       <div className="app">
         <Sidebar page={page} setPage={setPage} />
-        <main className="main">
+        <main className="main" id="main-content">
           <AnimatePresence mode="wait">
             <motion.div key={page} {...fadeUp}>
               {page === 'overview' && <Overview setPage={setPage} />}
@@ -80,7 +80,7 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar"><a href="#main-content" className="skip-link">Skip to main content</a>
       <a href="#" className="sidebar-logo">
         <ArgLogo />
         ARGES
@@ -91,11 +91,11 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
         <div key={i}>
           {sec.section && <div className="nav-section-title">{sec.section}</div>}
           {sec.items.map((n) => (
-            <div key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)}>
+            <button type="button" key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)} aria-current={page === n.page ? 'page' : undefined}>
               <svg viewBox="0 0 24 24"><path d={n.icon} /></svg>
               {n.label}
               {n.badge && <span className={`nav-badge${n.badgeColor ? ' ' + n.badgeColor : ''}`}>{n.badge}</span>}
-            </div>
+            </button>
           ))}
         </div>
       ))}
@@ -178,7 +178,7 @@ function Overview(_: { setPage: (p: Page) => void }) {
     <div>
       <Topbar title="Helper Dashboard" subtitle={<span>You're <strong style={{ color: 'var(--purple)' }}>online</strong> · Available to help blind users via Echo Network</span>}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className="toggle on" style={{ width: 44, height: 24 }} />
+          <button type="button" role="switch" aria-checked="true" aria-label="Available to accept help requests" className="toggle on" style={{ width: 44, height: 24 }} />
           <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Available</span>
         </div>
       </Topbar>
@@ -351,7 +351,7 @@ function Security() {
             </div>
           </div>
           <div>
-            <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.1rem', marginBottom: 4 }}>Perfect security score</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.1rem', marginBottom: 4 }}>Perfect security score</div>
             <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Identity verified · Passkey · 2FA · All protections enabled.</div>
           </div>
         </div>
@@ -392,7 +392,7 @@ function Settings() {
             <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Auto-accept urgent requests</div>
             <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Skip queue for emergencies</div>
           </div>
-          <div className="toggle" />
+          <button type="button" role="switch" aria-checked="false" aria-label="Auto-accept urgent requests" className="toggle" />
         </div>
         <div style={{ padding: '12px 0', borderBottom: '0.5px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

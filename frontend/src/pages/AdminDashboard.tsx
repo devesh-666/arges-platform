@@ -62,7 +62,7 @@ export function AdminDashboard() {
       <div className="cursor-ring" />
       <div className="app">
         <Sidebar page={page} setPage={setPage} />
-        <main className="main">
+        <main className="main" id="main-content">
           <AnimatePresence mode="wait">
             <motion.div key={page} {...fadeUp}>
               {page === 'dashboard' && <Dashboard setPage={setPage} />}
@@ -126,7 +126,7 @@ function AdminGate({ onAuthed }: { onAuthed: () => void }) {
             <circle cx="50" cy="50" r="3.5" fill="#FF6B1A" />
           </svg>
         </div>
-        <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.8rem', marginBottom: 6 }}>ARGES Vision Admin</div>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.8rem', marginBottom: 6 }}>ARGES Vision Admin</div>
         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.7rem', color: 'var(--orange)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 32 }}>Restricted Access · Authorized Personnel Only</div>
         <input
           type="password"
@@ -198,7 +198,7 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar"><a href="#main-content" className="skip-link">Skip to main content</a>
       <div className="sidebar-logo">
         <ArgLogo />
         ARGES
@@ -209,11 +209,11 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
         <div className="nav-section" key={sec.title}>
           <div className="nav-section-title">{sec.title}</div>
           {sec.items.map((n) => (
-            <div key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)}>
+            <button type="button" key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)} aria-current={page === n.page ? 'page' : undefined}>
               <svg viewBox="0 0 24 24"><path d={n.icon} /></svg>
               {n.label}
               {n.badge && <span className={`nav-badge${n.badgeColor ? ' ' + n.badgeColor : ''}`}>{n.badge}</span>}
-            </div>
+            </button>
           ))}
         </div>
       ))}
@@ -1103,7 +1103,7 @@ function SettingsPage() {
               <div style={{ fontSize: '0.88rem' }}>{title}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{sub}</div>
             </div>
-            <div className={`toggle${on ? ' on' : ''}`} />
+            <button type="button" role="switch" aria-checked={!!on} aria-label={`Toggle ${title}`} className={`toggle${on ? ' on' : ''}`} />
           </div>
         ))}
       </motion.div>

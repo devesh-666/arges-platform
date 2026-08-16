@@ -40,7 +40,7 @@ export function MemberDashboard() {
       <div className="cursor-ring" />
       <div className="app">
         <Sidebar page={page} setPage={setPage} />
-        <main className="main">
+        <main className="main" id="main-content">
           <AnimatePresence mode="wait">
             <motion.div key={page} {...fadeUp}>
               {page === 'overview' && <Overview />}
@@ -78,7 +78,7 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar"><a href="#main-content" className="skip-link">Skip to main content</a>
       <a href="#" className="sidebar-logo">
         <ArgLogo />
         ARGES
@@ -89,11 +89,11 @@ function Sidebar({ page, setPage }: { page: Page; setPage: (p: Page) => void }) 
         <div key={i}>
           {sec.section && <div className="nav-section-title">{sec.section}</div>}
           {sec.items.map((n) => (
-            <div key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)}>
+            <button type="button" key={n.page} className={`nav-item${page === n.page ? ' active' : ''}`} onClick={() => setPage(n.page)} aria-current={page === n.page ? 'page' : undefined}>
               <svg viewBox="0 0 24 24"><path d={n.icon} /></svg>
               {n.label}
               {n.badge && <span className={`nav-badge${n.badgeColor ? ' ' + n.badgeColor : ''}`}>{n.badge}</span>}
-            </div>
+            </button>
           ))}
         </div>
       ))}
@@ -240,7 +240,7 @@ function RaviStatus() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
           <div className="user-avatar blind" style={{ width: 64, height: 64, fontSize: '1.3rem' }}>RA</div>
           <div>
-            <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, fontSize: '1.5rem' }}>Ravi Kumar</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.5rem' }}>Ravi Kumar</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Your Brother · ARGES Device: ARGES-0014 · v2.1.3</div>
           </div>
         </div>
@@ -343,7 +343,7 @@ function Security() {
             </div>
           </div>
           <div>
-            <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 600, fontSize: '1.1rem', marginBottom: 4 }}>Good security</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.1rem', marginBottom: 4 }}>Good security</div>
             <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Add a backup passkey for maximum protection.</div>
           </div>
         </div>
@@ -410,7 +410,7 @@ function Settings() {
               <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{title}</div>
               <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{sub}</div>
             </div>
-            <div className={`toggle${on ? ' on' : ''}`} />
+            <button type="button" role="switch" aria-checked={!!on} aria-label={`Toggle ${title}`} className={`toggle${on ? ' on' : ''}`} />
           </div>
         ))}
       </motion.div>
