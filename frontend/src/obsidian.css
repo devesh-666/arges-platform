@@ -52,11 +52,14 @@
   --radius: 8px;
   --pill: 9999px;
 
-  /* Motion */
+  /* Motion. Slower than a typical app scale on purpose — past roughly 550ms an
+     expo-out reveal stops reading as a UI transition and starts reading as
+     cinematography. Interactive feedback stays on --t-micro so the interface
+     still feels responsive rather than laggy. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --t-micro: 120ms;
-  --t-element: 420ms;
-  --t-section: 720ms;
+  --t-micro: 180ms;
+  --t-element: 550ms;
+  --t-section: 900ms;
 
   /* Legacy aliases — components not yet migrated still resolve.
      Do not author new rules against these. */

@@ -22,13 +22,32 @@ import type { Variants, Transition } from 'framer-motion';
 /** The single curve. Time-driven motion only — never scroll-tied. */
 export const EASE = [0.16, 1, 0.3, 1] as const;
 
-/** Duration ladder, in seconds. */
+/**
+ * Duration ladder, in seconds.
+ *
+ * Tuned slower than a typical app scale on purpose. This is a marketing
+ * surface for a premium hardware product, and at 400ms an expo-out reveal
+ * still reads as a UI transition; past ~550ms it starts reading as
+ * cinematography. The cost is that anything interactive must stay on `micro`,
+ * or the interface feels laggy rather than considered.
+ */
 export const T = {
-  micro: 0.12,
-  element: 0.42,
-  section: 0.72,
-  cinematic: 1.2,
+  micro: 0.18,
+  element: 0.55,
+  section: 0.9,
+  cinematic: 1.4,
 } as const;
+
+/**
+ * Spring preset for smoothing scroll-driven values.
+ *
+ * Distinct from EASE and not interchangeable with it: an ease curve remaps
+ * scroll POSITION, which makes an element race then crawl against the
+ * scrollbar. A spring is a filter — it removes wheel-step jitter while keeping
+ * the mapping monotonic. Use this for `useSpring(scrollYProgress, SCROLL_SPRING)`,
+ * never an ease.
+ */
+export const SCROLL_SPRING = { stiffness: 140, damping: 34, mass: 0.35 } as const;
 
 const ease = EASE as unknown as Transition['ease'];
 
@@ -41,7 +60,7 @@ export const rise: Variants = {
 /** Stagger parent for `rise` children. */
 export const riseGroup: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.06 } },
 };
 
 /**
@@ -65,12 +84,12 @@ export const maskLine: Variants = {
  */
 export const charGroup: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.022, delayChildren: 0.08 } },
+  visible: { transition: { staggerChildren: 0.026, delayChildren: 0.1 } },
 };
 
 export const charItem: Variants = {
-  hidden: { opacity: 0, y: '0.5em' },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
+  hidden: { opacity: 0, y: '0.45em', filter: 'blur(6px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.7, ease } },
 };
 
 /** 4 — `hairlineDraw`. Every band divider draws itself left-to-right. */

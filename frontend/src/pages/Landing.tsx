@@ -1,11 +1,11 @@
-import { lazy, Suspense, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { lazy, Suspense, useRef, useState } from 'react';
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { SiteNav, SiteFooter } from '../components/SiteChrome';
 import { Reveal, RevealGroup, Rule, SectionHead, CharCascade } from '../components/Primitives';
 import { XRayTeardown } from '../components/XRayTeardown';
 import { AmbientVideo } from '../components/AmbientVideo';
-import { rise, inView, EASE } from '../animations/obsidian';
+import { rise, inView, EASE, SCROLL_SPRING } from '../animations/obsidian';
 import { MEDIA } from '../lib/media';
 
 // Three.js only downloads when the hero actually mounts.
@@ -54,6 +54,21 @@ const FAQS = [
 
 export function Landing() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Parallax on the opening. The render drifts and dissolves slightly faster
+  // than the type it sits behind, so the hero recedes instead of simply
+  // scrolling away. Spring-smoothed — see SCROLL_SPRING on why not an ease.
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const hp = useSpring(heroScroll, SCROLL_SPRING);
+  const renderY = useTransform(hp, [0, 1], ['0%', '18%']);
+  const renderScale = useTransform(hp, [0, 1], [1, 1.12]);
+  const renderFade = useTransform(hp, [0, 0.8], [0.75, 0]);
+  const copyY = useTransform(hp, [0, 1], ['0%', '-6%']);
+  const copyFade = useTransform(hp, [0, 0.7], [1, 0]);
 
   return (
     <>
@@ -62,20 +77,23 @@ export function Landing() {
 
       <main id="main">
         {/* ── Hero ──────────────────────────────────────────── */}
-        <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <section ref={heroRef} style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
           {/* The render sits behind the type and carries the page — Bugatti's
               rule. It is decorative, so it is hidden from assistive tech. */}
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.75 }}>
+          <motion.div
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, opacity: renderFade, y: renderY, scale: renderScale }}
+          >
             <Suspense fallback={null}>
               <GlassesViewer3D />
             </Suspense>
-          </div>
+          </motion.div>
           <div
             aria-hidden="true"
             style={{ position: 'absolute', inset: 0, background: 'radial-gradient(90% 70% at 50% 50%, transparent 20%, rgba(8,8,12,0.7) 70%, var(--canvas) 100%)' }}
           />
 
-          <div className="shell" style={{ position: 'relative', zIndex: 2, paddingTop: 96, paddingBottom: 64 }}>
+          <motion.div className="shell" style={{ position: 'relative', zIndex: 2, paddingTop: 96, paddingBottom: 64, y: copyY, opacity: copyFade }}>
             <motion.span
               className="eyebrow"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -132,7 +150,7 @@ export function Landing() {
                 </div>
               ))}
             </motion.dl>
-          </div>
+          </motion.div>
         </section>
 
         {/* ── Morning (scene 3) ─────────────────────────────── */}
@@ -189,9 +207,26 @@ export function Landing() {
               title="Twelve components. One hundred and seventy-four millimetres."
               lead="A 3000mAh cell and the audio chain in the left temple, capture in the front frame, and a Raspberry Pi Zero 2 W doing the thinking in the right."
             />
+            {/* The film sits behind the schematic here for the same reason it
+                does on /3d — the diagram alone reads as boxes on a page. Dimmed
+                and blurred so it gives the parts something to sit inside
+                without competing with them. */}
             <Reveal delay={0.1}>
-              <div style={{ marginTop: 'var(--s7)', opacity: 0.9 }}>
-                <XRayTeardown active={null} showAll />
+              <div style={{ position: 'relative', marginTop: 'var(--s7)' }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute', inset: '-8% -4%',
+                    opacity: 0.3, filter: 'blur(3px)',
+                    maskImage: 'radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%)',
+                  }}
+                >
+                  <AmbientVideo src={MEDIA.hero} vignette={false} />
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <XRayTeardown active={null} showAll />
+                </div>
               </div>
             </Reveal>
             {/* Contact (scene 4). The schematic explains the parts; this is
