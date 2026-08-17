@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom';
 import { SiteNav, SiteFooter } from '../components/SiteChrome';
 import { Reveal, RevealGroup, Rule, SectionHead, CharCascade } from '../components/Primitives';
 import { XRayTeardown } from '../components/XRayTeardown';
+import { AmbientVideo } from '../components/AmbientVideo';
 import { rise, inView, EASE } from '../animations/obsidian';
+import { MEDIA } from '../lib/media';
 
 // Three.js only downloads when the hero actually mounts.
 const GlassesViewer3D = lazy(() => import('../components/GlassesViewer3D').then((m) => ({ default: m.GlassesViewer3D })));
@@ -133,6 +135,28 @@ export function Landing() {
           </div>
         </section>
 
+        {/* ── Morning (scene 3) ─────────────────────────────── */}
+        {/* Straight after the hero: the product has been named, now show who
+            it is for. Full-bleed and quiet — the claim sits over the footage
+            rather than next to it. */}
+        <section style={{ position: 'relative', minHeight: '78vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }} aria-label="Someone walking, unaided">
+          <AmbientVideo src={MEDIA.morning} />
+          <div className="shell" style={{ position: 'relative', zIndex: 1, paddingBottom: 'var(--s8)' }}>
+            <Reveal><span className="eyebrow">/ Why it exists</span></Reveal>
+            <Reveal delay={0.08}>
+              <p className="display-md" style={{ marginTop: 'var(--s4)', maxWidth: '17ch' }}>
+                Independence, not assistance.
+              </p>
+            </Reveal>
+            <Reveal delay={0.14}>
+              <p className="lead body-mute" style={{ marginTop: 'var(--s4)', maxWidth: '46ch' }}>
+                Fifteen million people in India live without sight. ARGES is built so
+                that the walk to the shop needs nobody's permission.
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
         <div className="shell"><Rule /></div>
 
         {/* ── 01 · Ecosystem ────────────────────────────────── */}
@@ -170,7 +194,24 @@ export function Landing() {
                 <XRayTeardown active={null} showAll />
               </div>
             </Reveal>
-            <Reveal delay={0.16}>
+            {/* Contact (scene 4). The schematic explains the parts; this is
+                what one of them feels like. Inline rather than full-bleed so
+                it reads as evidence attached to the diagram, not a new topic. */}
+            <Reveal delay={0.14}>
+              <figure style={{ marginTop: 'var(--s7)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'var(--s5)', alignItems: 'center' }}>
+                <AmbientVideo src={MEDIA.contact} variant="inline" />
+                <figcaption>
+                  <span className="eyebrow eyebrow-mute">/ HapticBand</span>
+                  <p className="body-mute" style={{ marginTop: 'var(--s3)', fontSize: '0.9375rem', maxWidth: '38ch' }}>
+                    Directional vibration zones encode object and distance, so a
+                    confirmation arrives through the wrist without a word being spoken
+                    or a sound being blocked.
+                  </p>
+                </figcaption>
+              </figure>
+            </Reveal>
+
+            <Reveal delay={0.2}>
               <div style={{ marginTop: 'var(--s6)' }}>
                 <Link to="/3d" className="btn btn-outline btn-lg">Take the frame apart</Link>
               </div>
@@ -275,8 +316,12 @@ export function Landing() {
         </section>
 
         {/* ── Close ─────────────────────────────────────────── */}
-        <section className="band">
-          <div className="shell" style={{ textAlign: 'center' }}>
+        {/* Network (scene 5) sits behind the final CTA — the Echo Network as a
+            city rather than a diagram. The vignette in AmbientVideo is what
+            keeps the type legible over it. */}
+        <section className="band" style={{ position: 'relative', overflow: 'hidden', minHeight: '72vh', display: 'flex', alignItems: 'center' }}>
+          <AmbientVideo src={MEDIA.network} />
+          <div className="shell" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
             <motion.h2 className="display-lg" variants={rise} initial="hidden" whileInView="visible" viewport={inView} style={{ margin: '0 auto', maxWidth: '18ch' }}>
               Sight is not the only way to see.
             </motion.h2>

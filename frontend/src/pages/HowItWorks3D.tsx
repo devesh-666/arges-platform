@@ -5,7 +5,9 @@ import { SiteNav, SiteFooter } from '../components/SiteChrome';
 import { Reveal, Rule, SectionHead, CharCascade } from '../components/Primitives';
 import { XRayTeardown, PARTS, ZONES, type Zone } from '../components/XRayTeardown';
 import { ScrubVideo } from '../components/ScrubVideo';
+import { AmbientVideo } from '../components/AmbientVideo';
 import { inView, rise } from '../animations/obsidian';
+import { MEDIA } from '../lib/media';
 import poster from '../assets/hero.png';
 
 /**
@@ -17,8 +19,8 @@ import poster from '../assets/hero.png';
  * as one continuous move rather than two sections stacked together.
  */
 
-/** Drop the Flow render here and Act I upgrades itself — no code change. */
-const HERO_VIDEO = '/media/arges-hero.mp4';
+/** Slots live in lib/media.ts. Drop a file in and the section upgrades itself. */
+const HERO_VIDEO = MEDIA.hero;
 
 const PIPELINE = [
   { step: '01', title: '"ARGES, read this sign."', where: 'On device', detail: 'The SPH0645 microphone array picks up the wake word. Porcupine matches it locally in under 3.5% CPU — no audio leaves the frame to do it.' },
@@ -195,6 +197,20 @@ export function HowItWorks3D() {
         </section>
 
         <div className="shell"><Rule /></div>
+
+        {/* ── INTERLUDE — Signal (scene 2) ──────────────────── */}
+        {/* Sits between the static teardown and the pipeline: the parts have
+            been named, now something moves through them. Full-bleed so the
+            page opens up before the dense step list. */}
+        <section style={{ position: 'relative', height: '62vh', minHeight: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }} aria-label="Signal moving through the frame">
+          <AmbientVideo src={MEDIA.signal} />
+          <Reveal className="shell">
+            {/* Positioned so it paints above the absolutely-placed video. */}
+            <p className="display-md" style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: '20ch', margin: '0 auto' }}>
+              Then something moves through them.
+            </p>
+          </Reveal>
+        </section>
 
         {/* ── ACT III — Pipeline ────────────────────────────── */}
         <section className="band" aria-label="From voice to answer">
