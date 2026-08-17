@@ -1,146 +1,269 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import type { SpinState } from '../components/GlassesViewer3D';
+import { SiteNav, SiteFooter } from '../components/SiteChrome';
+import { Reveal, Rule, SectionHead, CharCascade } from '../components/Primitives';
+import { XRayTeardown, PARTS, ZONES, type Zone } from '../components/XRayTeardown';
+import { ScrubVideo } from '../components/ScrubVideo';
+import { inView, rise } from '../animations/obsidian';
+import poster from '../assets/hero.png';
 
-const GlassesViewer3D = lazy(() => import('../components/GlassesViewer3D').then(m => ({ default: m.GlassesViewer3D })));
+/**
+ * How it works, in four acts.
+ *
+ * Act I is a scroll-scrubbed film that ends pushing into the temple arm;
+ * Act II picks the frame up from exactly there and dissolves the shell. The
+ * match cut is what makes the generated footage and the built diagram read
+ * as one continuous move rather than two sections stacked together.
+ */
 
-const STEPS = [
-  { num: '/ STEP 01', title: '"ARGES, read this sign."', desc: 'The user says the wake word. The microphone array detects "ARGES" locally using Porcupine — completely offline, using less than 3.5% CPU.', tech: 'Porcupine · Offline · <3.5% CPU' },
-  { num: '/ STEP 02', title: 'Intent parsed.', desc: 'The word "read" triggers OCR mode. The 1080p camera captures a frame of whatever is in front of the user.', tech: '1080p Sony Sensor · 30fps' },
-  { num: '/ STEP 03', title: 'Text extracted on-device.', desc: 'Tesseract OCR runs directly on the glasses — no internet needed. It reads the sign and extracts the text in milliseconds.', tech: 'Tesseract · PaddleOCR · Edge AI' },
-  { num: '/ STEP 04', title: 'Translated to your language.', desc: 'If needed, the text is sent to Bhashini cloud for translation into one of 32+ Indian languages.', tech: 'Bhashini · 32+ Languages' },
-  { num: '/ STEP 05', title: 'Spoken aloud.', desc: 'The bone-conduction speaker delivers the answer directly into the user\'s ear. The HapticBand vibrates to confirm.', tech: 'Bone Conduction · Haptic Confirm' },
+/** Drop the Flow render here and Act I upgrades itself — no code change. */
+const HERO_VIDEO = '/media/arges-hero.mp4';
+
+const PIPELINE = [
+  { step: '01', title: '"ARGES, read this sign."', where: 'On device', detail: 'The SPH0645 microphone array picks up the wake word. Porcupine matches it locally in under 3.5% CPU — no audio leaves the frame to do it.' },
+  { step: '02', title: 'The camera takes one frame.', where: 'On device', detail: 'Intent routes to OCR, and the snap-fit front camera captures a single frame of whatever the wearer is facing.' },
+  { step: '03', title: 'Text is read on the glasses.', where: 'On device', detail: 'Tesseract and PaddleOCR run on the Pi Zero 2 W itself. The sign is read without an internet connection.' },
+  { step: '04', title: 'Translated, if it needs to be.', where: 'Encrypted cloud', detail: 'Only this step leaves the device. Text — never the image — crosses to Bhashini for 32+ Indian languages, AES-256 end to end.' },
+  { step: '05', title: 'Spoken into the ear.', where: 'On device', detail: 'The 3W bone-conduction speaker delivers the answer and the HapticBand confirms it. Ambient hearing is never blocked.' },
 ];
 
 export function HowItWorks3D() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const spin = useRef<SpinState>({ y: 0, x: 0, scale: 1 });
-  const [activeStep, setActiveStep] = useState(0);
+  const filmRef = useRef<HTMLDivElement>(null);
+  const xrayRef = useRef<HTMLDivElement>(null);
+  const [zone, setZone] = useState<Zone | null>(null);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
+  const reduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const { scrollYProgress: filmProgress } = useScroll({
+    target: filmRef,
     offset: ['start start', 'end end'],
   });
 
-  const lift = useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.2, 0]);
+  const { scrollYProgress: xrayProgress } = useScroll({
+    target: xrayRef,
+    offset: ['start start', 'end end'],
+  });
 
-  // Update active step + drive the 3D model rotation from scroll
+  const titleFade = useTransform(filmProgress, [0, 0.55], [1, 0]);
+
+  // Walk the three zones across the sticky range, then light everything.
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on('change', v => {
-      const step = Math.min(4, Math.floor(v * 5));
-      setActiveStep(step);
-      spin.current = {
-        y: v * Math.PI * 2,
-        x: Math.sin(v * Math.PI) * 0.25,
-        scale: 1 + Math.sin(v * Math.PI) * 0.06,
-      };
+    if (reduced) return;
+    const unsubscribe = xrayProgress.on('change', (v) => {
+      if (v < 0.14) setZone(null);
+      else if (v < 0.42) setZone('left');
+      else if (v < 0.68) setZone('front');
+      else setZone('right');
     });
     return () => unsubscribe();
-  }, [scrollYProgress]);
+  }, [xrayProgress, reduced]);
+
+  // With reduced motion the scroll carries no meaning, so show the finished state.
+  const showAll = reduced || zone === null ? reduced : false;
+  const activeZone = reduced ? null : zone;
+  const activeParts = PARTS.filter((p) => p.zone === (activeZone ?? 'left'));
 
   return (
-    <div className="theme-admin">
-      {/* Nav */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[calc(100%-60px)] max-w-[1100px] px-6 py-2.5 rounded-full glass">
-        <Link to="/" className="flex items-center gap-2.5 font-display font-semibold text-lg tracking-tight">
-          <svg viewBox="0 0 100 100" width="26" height="26"><path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z" stroke="#FF6B1A" strokeWidth="3" fill="none" /><circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none" /><circle cx="50" cy="50" r="3.5" fill="#FF6B1A" /></svg>
-          ARGES
-        </Link>
-        <Link to="/" className="text-sm text-[#8B8B9A] hover:text-white">← Back to Home</Link>
-        <Link to="/signup" className="px-5 py-2 text-sm font-semibold bg-[#FF6B1A] text-black rounded-full">Get ARGES</Link>
-      </nav>
+    <>
+      <a href="#main" className="skip-link">Skip to content</a>
+      <SiteNav />
 
-      {/* Intro */}
-      <section className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 pt-32 pb-10 relative z-10">
-        <div className="font-mono text-xs tracking-[0.3em] uppercase text-[#FF6B1A] mb-6">/ How It Works</div>
-        <h1 className="font-display font-semibold text-[clamp(2.5rem,7vw,5rem)] leading-[0.98] tracking-tight">
-          From voice to answer<br />in <span className="grad-text">under 1.5 seconds.</span>
-        </h1>
-        <p className="max-w-[560px] text-[#9999AA] text-base mt-5 leading-relaxed">
-          Scroll to watch the ARGES glasses come alive. Each step shows exactly what happens inside the device.
-        </p>
-        <div className="mt-12 flex flex-col items-center gap-2.5 text-[#555566] text-[0.62rem] tracking-[0.25em]">
-          <span>SCROLL TO EXPLORE</span>
-          <div className="w-px h-12 bg-gradient-to-b from-transparent to-[#FF6B1A]" style={{ animation: 'pulse 2s infinite' }} />
-        </div>
-      </section>
+      <main id="main">
+        {/* ── ACT I — Arrival ───────────────────────────────── */}
+        <section ref={filmRef} style={{ height: reduced ? 'auto' : '150vh', position: 'relative' }} aria-label="The ARGES frame">
+          <div style={{ position: reduced ? 'relative' : 'sticky', top: 0, height: reduced ? '70vh' : '100vh', overflow: 'hidden' }}>
+            <ScrubVideo src={HERO_VIDEO} poster={poster} progress={filmProgress} />
 
-      {/* Scroll 3D Section */}
-      <div ref={containerRef} className="relative" style={{ height: '500vh' }}>
-        <div className="sticky top-0 h-screen grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-          {/* LEFT: real 3D model (rotates with scroll) */}
-          <div className="relative h-full flex items-center justify-center">
             <motion.div
-              style={{ y: lift }}
-              className="w-[min(88vw,560px)] h-[min(70vw,480px)] flex items-center justify-center"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                padding: '0 var(--s5)',
+                opacity: reduced ? 1 : titleFade,
+              }}
             >
-              <Suspense fallback={
-                <div className="w-44 h-44 rounded-full" style={{ background: 'radial-gradient(circle, rgba(255,107,26,0.22), transparent 70%)', animation: 'pulse 2s infinite' }} />
-              }>
-                <GlassesViewer3D autoRotate={false} spinRef={spin} />
-              </Suspense>
+              <span className="eyebrow" style={{ marginBottom: 'var(--s5)' }}>/ How it works</span>
+              <h1 className="display-xl" style={{ maxWidth: '14ch' }}>
+                <CharCascade text="Look inside." />
+              </h1>
+              <p className="lead body-mute" style={{ marginTop: 'var(--s5)', maxWidth: '46ch' }}>
+                Twelve components across 174 millimetres. Here is every one of them,
+                and the path a question takes through them.
+              </p>
             </motion.div>
 
-            {/* Floating badges */}
-            {['Wake Word', 'Camera', 'AI Engine', 'Translation', 'Speaker'].map((label, i) => (
-              <motion.div
-                key={label}
-                className="absolute glass border border-[rgba(255,255,255,0.18)] rounded-2xl px-5 py-3 flex items-center gap-2.5"
-                style={{ opacity: activeStep === i ? 1 : 0, transition: 'opacity 0.6s',
-                  top: `${[20, 30, 50, 30, 20][i]}%`, left: `${[15, 70, 10, 72, 18][i]}%` }}
+            {!reduced && (
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute', bottom: 'var(--s7)', left: '50%', transform: 'translateX(-50%)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--s3)',
+                }}
               >
-                <span className="w-2 h-2 rounded-full bg-[#FF6B1A]" style={{ boxShadow: '0 0 8px rgba(255,107,26,0.4)' }} />
-                <div><div className="text-[0.65rem] text-[#8B8B9A] uppercase tracking-wider">{label}</div><div className="font-semibold text-sm">{['Active', 'Capturing', 'Processing', 'Bhashini', 'Speaking'][i]}</div></div>
-              </motion.div>
-            ))}
+                <span className="mono" style={{ color: 'var(--mute)', letterSpacing: '0.24em' }}>SCROLL</span>
+                <div style={{ width: 1, height: 40, background: 'linear-gradient(to bottom, var(--accent), transparent)' }} />
+              </div>
+            )}
           </div>
+        </section>
 
-          {/* RIGHT: Steps */}
-          <div className="p-0 8vw 0 4vw relative flex items-center">
-            <div className="w-full max-w-[460px]">
-              {STEPS.map((step, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute inset-0 flex flex-col justify-center"
-                  style={{ opacity: activeStep === i ? 1 : 0, transform: activeStep === i ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.6s cubic-bezier(0.16,1,0.3,1)' }}
-                >
-                  <div className="font-mono text-xs text-[#FF6B1A] tracking-widest mb-5">{step.num}</div>
-                  <h2 className="font-display font-semibold text-[clamp(1.8rem,3.5vw,2.8rem)] tracking-tight leading-tight mb-4">{step.title}</h2>
-                  <p className="text-[#9999AA] text-base leading-relaxed mb-5">{step.desc}</p>
-                  <span className="inline-flex items-center gap-2 glass border border-[rgba(255,255,255,0.10)] px-4 py-2 rounded-full text-xs font-mono text-[#FF8533]">
-                    {step.tech}
-                  </span>
-                </motion.div>
-              ))}
+        {/* ── ACT II — Teardown ─────────────────────────────── */}
+        <section ref={xrayRef} style={{ height: reduced ? 'auto' : '400vh', position: 'relative' }} aria-label="Inside the frame">
+          <div style={{ position: reduced ? 'relative' : 'sticky', top: 0, minHeight: '100vh', display: 'flex', alignItems: 'center', padding: 'var(--s8) 0' }}>
+            <div className="shell" style={{ width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 'var(--s6)' }}>
+
+                <div>
+                  <span className="eyebrow">/ The teardown</span>
+                  <h2 className="display-md" style={{ marginTop: 'var(--s3)', maxWidth: '20ch' }}>
+                    Nothing here is decorative.
+                  </h2>
+                </div>
+
+                <XRayTeardown active={activeZone} showAll={showAll} />
+
+                {/* Zone rail + parts list. This is also the accessible
+                    rendering of the diagram — every part is real text. */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 'var(--s5)', alignItems: 'start' }}>
+                  <div>
+                    <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--s3)' }}>
+                      {ZONES.map((z) => {
+                        const on = reduced || activeZone === z.id;
+                        return (
+                          <li key={z.id} style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--s3)' }}>
+                            <span
+                              className="mono"
+                              style={{
+                                color: on ? 'var(--accent)' : 'var(--faint)',
+                                transition: 'color var(--t-element) var(--ease)',
+                                minWidth: 24,
+                              }}
+                            >
+                              {on ? '●' : '○'}
+                            </span>
+                            <span>
+                              <span style={{ color: on ? 'var(--ink)' : 'var(--mute)', transition: 'color var(--t-element) var(--ease)' }}>
+                                {z.label}
+                              </span>
+                              <span className="mono" style={{ color: 'var(--faint)', display: 'block', marginTop: 2 }}>
+                                {z.note.toUpperCase()}
+                              </span>
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  <div style={{ gridColumn: 'span 2', minWidth: 0 }}>
+                    {(reduced ? ZONES.map((z) => z.id) : [activeZone ?? 'left']).map((zid) => (
+                      <div key={zid} style={{ marginBottom: reduced ? 'var(--s5)' : 0 }}>
+                        {reduced && (
+                          <div className="eyebrow eyebrow-mute" style={{ marginBottom: 'var(--s3)' }}>
+                            {ZONES.find((z) => z.id === zid)?.label}
+                          </div>
+                        )}
+                        <ul style={{ listStyle: 'none', display: 'grid', gap: 1, background: 'var(--hairline)', border: '1px solid var(--hairline)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                          {(reduced ? PARTS.filter((p) => p.zone === zid) : activeParts).map((p) => (
+                            <motion.li
+                              key={p.name}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+                              style={{ background: 'var(--canvas-card)', padding: 'var(--s3) var(--s4)', display: 'flex', justifyContent: 'space-between', gap: 'var(--s4)', flexWrap: 'wrap' }}
+                            >
+                              <span style={{ color: 'var(--ink)', fontSize: '0.875rem' }}>{p.name}</span>
+                              <span className="mono" style={{ color: 'var(--mute)' }}>{p.spec}</span>
+                            </motion.li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Progress dots */}
-      <div className="fixed left-10 top-1/2 -translate-y-1/2 z-40 hidden md:block">
-        <div className="w-[3px] h-60 bg-[rgba(255,255,255,0.08)] rounded-full relative">
-          <motion.div className="w-full bg-gradient-to-b from-[#FF6B1A] to-[#FF8533] rounded-full" style={{ height: scrollYProgress.get() * 100 + '%', boxShadow: '0 0 12px rgba(255,107,26,0.4)' }} />
-          {[0, 25, 50, 75, 100].map((pos, i) => (
-            <div key={i} className={`absolute -left-[7px] w-[17px] h-[17px] rounded-full border-2 transition-all ${activeStep >= i ? 'border-[#FF6B1A] bg-[#FF6B1A]' : 'border-[rgba(255,255,255,0.15)] bg-[var(--bg)]'}`} style={{ top: `${pos}%` }} />
-          ))}
-        </div>
-      </div>
+        <div className="shell"><Rule /></div>
 
-      {/* Outro */}
-      <section className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-32 relative z-10">
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} initial="hidden" whileInView="visible" viewport={{ once: true }}
-          className="max-w-[700px] p-20 rounded-[40px] glass text-center"
-          style={{ background: 'radial-gradient(circle at 50% 0%, rgba(255,107,26,0.12), transparent 60%), var(--glass)' }}>
-          <h2 className="font-display font-semibold text-[clamp(2rem,4vw,3.2rem)] tracking-tight mb-5">That's <span className="grad-text">ARGES.</span></h2>
-          <p className="text-[#9999AA] mb-9 text-lg">Voice in. Answer out. Under 1.5 seconds. Fully offline core AI. Built for India.</p>
-          <div className="flex gap-3 justify-center">
-            <Link to="/signup" className="px-9 py-4 rounded-full font-semibold bg-[#FF6B1A] text-black" style={{ boxShadow: '0 8px 32px rgba(255,107,26,0.4)' }}>Get ARGES →</Link>
-            <Link to="/" className="px-9 py-4 rounded-full font-medium text-white border border-[rgba(255,255,255,0.22)] glass">Back to Home</Link>
+        {/* ── ACT III — Pipeline ────────────────────────────── */}
+        <section className="band" aria-label="From voice to answer">
+          <div className="shell">
+            <SectionHead
+              eyebrow="/ The path"
+              title="From voice to answer, in under 1.5 seconds."
+              lead="Four of these five steps never touch the internet. Only translated text leaves the frame — the image never does."
+            />
+
+            <motion.ol
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={inView}
+              style={{ listStyle: 'none', marginTop: 'var(--s8)', display: 'grid', gap: 1, background: 'var(--hairline)', border: '1px solid var(--hairline)', borderRadius: 'var(--radius)', overflow: 'hidden' }}
+            >
+              {PIPELINE.map((p) => {
+                const cloud = p.where === 'Encrypted cloud';
+                return (
+                  <motion.li
+                    key={p.step}
+                    variants={rise}
+                    style={{ background: 'var(--canvas-card)', padding: 'var(--s5)', display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', gap: 'var(--s5)', alignItems: 'start' }}
+                  >
+                    <span className="mono" style={{ color: 'var(--accent)' }}>{p.step}</span>
+                    <div>
+                      <h3 className="display-sm" style={{ marginBottom: 'var(--s2)' }}>{p.title}</h3>
+                      <p className="body-mute" style={{ fontSize: '0.9375rem', maxWidth: '62ch' }}>{p.detail}</p>
+                    </div>
+                    <span className={`tag ${cloud ? 'tag-warn' : 'tag-ok'}`} style={{ whiteSpace: 'nowrap' }}>
+                      <span className="dot" />{p.where}
+                    </span>
+                  </motion.li>
+                );
+              })}
+            </motion.ol>
+
+            <Reveal delay={0.1}>
+              <p className="mono" style={{ color: 'var(--faint)', marginTop: 'var(--s5)', textAlign: 'center' }}>
+                AES-256 END TO END · ZERO-KNOWLEDGE SERVER · DPDP ACT COMPLIANT
+              </p>
+            </Reveal>
           </div>
-        </motion.div>
-      </section>
-    </div>
+        </section>
+
+        {/* ── ACT IV — Close ────────────────────────────────── */}
+        <section className="band">
+          <div className="shell" style={{ textAlign: 'center' }}>
+            <Reveal>
+              <h2 className="display-lg" style={{ margin: '0 auto', maxWidth: '16ch' }}>That is ARGES.</h2>
+            </Reveal>
+            <Reveal delay={0.08}>
+              <p className="lead body-mute" style={{ margin: 'var(--s5) auto 0', maxWidth: '48ch' }}>
+                Voice in, answer out. The core intelligence runs on the frame itself,
+                so it works where the network does not.
+              </p>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <div style={{ display: 'flex', gap: 'var(--s3)', justifyContent: 'center', marginTop: 'var(--s7)', flexWrap: 'wrap' }}>
+                <Link to="/signup" className="btn btn-accent btn-lg">Get ARGES</Link>
+                <Link to="/" className="btn btn-outline btn-lg">Back to home</Link>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      </main>
+
+      <SiteFooter />
+    </>
   );
 }

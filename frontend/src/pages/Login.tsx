@@ -2,98 +2,118 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../lib/api';
+import { Logo } from '../components/Primitives';
+import { EASE } from '../animations/obsidian';
 
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const ROUTES: Record<string, string> = {
+  family_head: '/family',
+  family_member: '/member',
+  helper: '/helper',
+  admin: '/admin',
+  blind: '/family',
+};
+
+/** The seeded family head — the demo shortcut, unchanged. */
+const DEMO_EMAIL = 'lakshmi@arges.app';
 
 export function Login() {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState<'demo' | 'email' | null>(null);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handlePasskey = async () => {
-    setLoading(true);
+  /**
+   * The backend supports a passkey-style path: a user with no password set
+   * authenticates on email alone. Both buttons therefore go through the same
+   * endpoint — the only difference is whose address is submitted.
+   */
+  const signIn = async (address: string, which: 'demo' | 'email') => {
+    setError('');
+    setLoading(which);
     try {
-      const res = await api.auth.login('lakshmi@arges.app');
+      const res = await api.auth.login(address);
       if (res.success && res.data) {
         localStorage.setItem('arges_token', res.data.token);
-        const role = (res.data.user as { role: string }).role;
-        const routes: Record<string, string> = {
-          family_head: '/family', family_member: '/member',
-          helper: '/helper', admin: '/admin', blind: '/family'
-        };
-        navigate(routes[role] || '/family');
+        const role = (res.data.user as { role?: string }).role ?? '';
+        navigate(ROUTES[role] ?? '/family');
+        return;
       }
-    } catch {
-      setMsg('Login failed. Try again.');
+      setError('That did not work. Check the address and try again.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Sign in failed. Try again.');
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  const handleMagicLink = () => {
-    if (!email) { setMsg('Enter your email first.'); return; }
-    setMsg('Magic link sent! Check your email.');
-  };
-
   return (
-    <main className="theme-admin min-h-screen flex items-center justify-center p-6">
+    <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--s6) var(--s5)' }}>
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: EASE }}
-        className="card"
-        // Inline, not Tailwind: `.card{max-width:520px}` in arges.css is unlayered and
-        // outranks the layered `max-w-[420px]` utility. 420px matches the prototype.
-        style={{ textAlign: 'center', maxWidth: 420, width: '100%' }}
+        transition={{ duration: 0.6, ease: EASE }}
+        style={{ width: '100%', maxWidth: 400 }}
       >
-        <div className="logo" style={{ marginBottom: '28px' }}>
-          <svg viewBox="0 0 100 100" width="56" height="56" style={{ filter: 'drop-shadow(0 0 16px var(--orange-glow))', margin: '0 auto' }}>
-            <path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z" stroke="#FF6B1A" strokeWidth="3" fill="none"/>
-            <circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none"/>
-            <circle cx="50" cy="50" r="3.5" fill="#FF6B1A"/>
-          </svg>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.6rem', marginTop: '10px' }}>ARGES Vision</h1>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '0.65rem', color: 'var(--orange)', letterSpacing: '0.2em', textTransform: 'uppercase', marginTop: '6px' }}>Welcome Back</div>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--s7)' }}>
+          <Link to="/" style={{ display: 'inline-flex', justifyContent: 'center' }} aria-label="ARGES home">
+            <Logo size={40} />
+          </Link>
+          <h1 className="display-sm" style={{ marginTop: 'var(--s4)' }}>Welcome back</h1>
+          <p className="eyebrow eyebrow-mute" style={{ marginTop: 'var(--s3)' }}>/ Sign in</p>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          onClick={handlePasskey} disabled={loading}
-          className="passkey-btn"
+        <form
+          className="panel"
+          style={{ padding: 'var(--s5)', display: 'flex', flexDirection: 'column', gap: 'var(--s4)' }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!email.trim()) { setError('Enter your email address first.'); return; }
+            signIn(email.trim(), 'email');
+          }}
         >
-          <svg viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="11" width="18" height="11" rx="2" fill="none" stroke="var(--orange)" strokeWidth="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="var(--orange)" strokeWidth="1.5"/></svg>
-          Continue with Passkey
-        </motion.button>
+          <div className="field">
+            <label className="field-label" htmlFor="email">Email address</label>
+            <input
+              id="email"
+              className="input"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(''); }}
+              placeholder="you@email.com"
+            />
+          </div>
 
-        <div className="divider">OR</div>
+          <button type="submit" className="btn btn-accent" disabled={loading !== null} style={{ width: '100%' }}>
+            {loading === 'email' ? 'Signing in…' : 'Continue'}
+          </button>
 
-        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.3rem', margin: '28px 0 6px' }}>Sign in with email</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '28px' }}>We'll send a magic link to your inbox.</p>
+          {error && <p className="form-error" role="alert">{error}</p>}
 
-        <div className="input-group">
-          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="var(--muted)" strokeWidth="1.5"/><polyline points="22,6 12,13 2,6" fill="none" stroke="var(--muted)" strokeWidth="1.5"/></svg>
-          <input className="form-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" style={{ paddingLeft: '46px' }} />
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s3)' }} aria-hidden="true">
+            <span className="rule" style={{ flex: 1 }} />
+            <span className="mono" style={{ color: 'var(--faint)' }}>OR</span>
+            <span className="rule" style={{ flex: 1 }} />
+          </div>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-          onClick={handleMagicLink} disabled={loading}
-          className="btn"
-          style={{ width: '100%', marginBottom: '12px' }}
-        >
-          {loading ? 'Signing in...' : 'Send Magic Link →'}
-        </motion.button>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => signIn(DEMO_EMAIL, 'demo')}
+            disabled={loading !== null}
+            style={{ width: '100%' }}
+          >
+            {loading === 'demo' ? 'Signing in…' : 'Continue with passkey'}
+          </button>
 
-        {msg && <p style={{ fontSize: '0.82rem', color: msg.includes('sent') ? 'var(--orange)' : '#EF5350', marginTop: '8px' }}>{msg}</p>}
+          <p className="form-note" style={{ textAlign: 'center' }}>
+            Protected by passkey and 2FA. Biometric data never leaves the device.
+          </p>
+        </form>
 
-        <div style={{ marginTop: '24px', fontSize: '0.82rem', color: 'var(--muted)' }}>
-          New to ARGES? <Link to="/signup" style={{ color: 'var(--orange)', fontWeight: 600 }}>Create a family account →</Link>
-        </div>
-
-        <div style={{ marginTop: '20px', padding: '14px', borderRadius: '12px', fontSize: '0.78rem', color: 'var(--muted)', border: '0.5px solid var(--glass-border)', background: 'var(--glass)' }}>
-          All accounts protected by Passkey + 2FA. Your biometric data never leaves your device.
-        </div>
+        <p className="body-mute" style={{ textAlign: 'center', marginTop: 'var(--s5)', fontSize: '0.875rem' }}>
+          New to ARGES? <Link to="/signup" style={{ color: 'var(--accent)' }}>Create a family account</Link>
+        </p>
       </motion.div>
     </main>
   );
