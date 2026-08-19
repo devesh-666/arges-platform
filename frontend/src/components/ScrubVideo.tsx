@@ -37,6 +37,17 @@ export function ScrubVideo({
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // The loadedmetadata event can beat React's handler to the punch (preload
+  // satisfies from cache before the prop binds), leaving a ready element that
+  // never flips `usable`. Recover by checking the element's current state on
+  // mount — HAVE_METADATA means the event already fired.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v && v.readyState >= 1 && v.duration && !Number.isNaN(v.duration)) {
+      setUsable(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (reduced || !usable) return;
     const video = videoRef.current;
@@ -99,6 +110,7 @@ export function ScrubVideo({
           const v = e.currentTarget;
           if (v.duration && !Number.isNaN(v.duration)) setUsable(true);
         }}
+        onCanPlay={() => setUsable(true)}
         onError={() => setUsable(false)}
         style={{
           position: 'absolute',

@@ -361,6 +361,60 @@ body::after {
 .table tbody tr { transition: background var(--t-micro) var(--ease); }
 .table tbody tr:hover { background: var(--canvas-soft); }
 
+/* ── Explainer layout ─────────────────────────────────────── */
+/* These live here rather than as inline styles because they need media
+   queries. Both were genuine text-mangling bugs at phone widths. */
+
+/* The teardown's zone rail + parts list.
+   Previously an auto-fit grid with a `span 2` child, which forces the grid to
+   materialise two 230px tracks at EVERY width — about 500px of floor inside a
+   padded shell, so the parts list overflowed on any phone. Single column until
+   there is genuinely room for two. */
+.teardown-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s5);
+  align-items: start;
+  margin-top: var(--s5);
+}
+@media (min-width: 760px) {
+  .teardown-cols { grid-template-columns: 220px minmax(0, 1fr); }
+}
+
+/* A pipeline step: number · copy · on-device-or-cloud tag.
+   The tag is `white-space: nowrap` and sat in its own auto column, which
+   squeezed the middle column to roughly 100px on a phone — shredding the
+   heading into one or two words per line. Below 720px the tag drops onto its
+   own row and the copy gets the full width. */
+.pipeline-row {
+  background: var(--canvas-card);
+  padding: var(--s5);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--s5);
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .pipeline-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--s3) var(--s4);
+  }
+  .pipeline-row > .pipeline-tag {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: var(--s2);
+  }
+}
+
+/* Tracked uppercase reserves trailing letter-space after the final glyph, so
+   centring measures a box wider than the visible text and the word sits a
+   pixel or two left of true centre. Pulling the tracking back off the right
+   edge re-centres it against anything drawn beneath. */
+.tracked-center {
+  letter-spacing: 0.24em;
+  margin-right: -0.24em;
+}
+
 /* ── Cursor ───────────────────────────────────────────────── */
 /* Renders alongside the native cursor; difference blending keeps it
    legible over both the canvas and any full-bleed render. */

@@ -15,19 +15,26 @@
  * those — though `-an` is still worth it since they all play muted.
  */
 
+/**
+ * The `?v=2` suffixes are cache-busting. Chrome serves videos from its media
+ * cache even across hard refreshes (range requests bypass reload logic), so
+ * after replacing the clips on disk the URL must change to force every
+ * browser to fetch the new bytes. Bump the version whenever media is
+ * replaced in place.
+ */
 export const MEDIA = {
   /** Scene 1 · 8s · /3d Act I. Scroll-scrubbed; must end pushing into the temple. */
-  hero: '/media/arges-hero.mp4',
+  hero: '/media/arges-hero.mp4?v=2',
 
   /** Scene 2 · 8s · /3d, between the teardown and the pipeline. Abstract light. */
-  signal: '/media/arges-signal.mp4',
+  signal: '/media/arges-signal.mp4?v=2',
 
   /** Scene 3 · 8s · Landing, under the hero. The human moment. */
-  morning: '/media/arges-morning.mp4',
+  morning: '/media/arges-morning.mp4?v=2',
 
   /** Scene 4 · 6s · Landing, inside the teardown teaser. Haptic macro. */
-  contact: '/media/arges-contact.mp4',
+  contact: '/media/arges-contact.mp4?v=2',
 
   /** Scene 5 · 8s · Landing, behind the closing CTA. City at dusk. */
-  network: '/media/arges-network.mp4',
+  network: '/media/arges-network.mp4?v=2',
 } as const;

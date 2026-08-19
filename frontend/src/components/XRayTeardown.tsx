@@ -87,10 +87,6 @@ export function XRayTeardown({ active, showAll = false }: { active: Zone | null;
           <stop offset="50%" stopColor="var(--accent)" stopOpacity="0.5" />
           <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
         </linearGradient>
-        <radialGradient id="lit-fill" cx="50%" cy="45%">
-          <stop offset="0%" stopColor="rgba(255,107,26,0.22)" />
-          <stop offset="100%" stopColor="rgba(255,107,26,0.06)" />
-        </radialGradient>
       </defs>
 
       {/* Shell. Dims once anything inside is live, so the housing reads as
@@ -163,7 +159,9 @@ export function XRayTeardown({ active, showAll = false }: { active: Zone | null;
               strokeWidth={1.25}
               animate={{
                 stroke: lit ? 'var(--accent)' : 'var(--hairline-hi)',
-                fill: lit ? 'url(#lit-fill)' : 'rgba(255,255,255,0.015)',
+                // No fill when lit — the accent stroke + label carry the
+                // highlight. Filled boxes read as unwanted amber panels.
+                fill: 'none',
                 opacity: lit ? 1 : 0.35,
               }}
               transition={{ duration: 0.7, ease: EASE }}

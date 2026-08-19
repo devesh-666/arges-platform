@@ -72,11 +72,12 @@ export function HowItWorks3D() {
   const titleOpacity = useTransform(p, [0, 0.16], [1, 0]);
   const titleScale = useTransform(p, [0, 0.3], [1, 1.06]);
 
-  // The film never leaves. It dims and keeps pushing in, so the diagram reads
-  // as something revealed inside it.
-  const filmOpacity = useTransform(p, [0.26, 0.44], [1, 0.22]);
-  const filmScale = useTransform(p, [0.26, 1], [1, 1.14]);
-  const filmBlur = useTransform(p, [0.26, 0.44], [0, 6]);
+  // The film hands off and leaves. It dims through the cut so the diagram
+  // resolves out of moving footage, then exits completely — no ghost layer
+  // behind the teardown.
+  const filmOpacity = useTransform(p, [0.26, 0.5], [1, 0]);
+  const filmScale = useTransform(p, [0.26, 0.5], [1, 1.14]);
+  const filmBlur = useTransform(p, [0.26, 0.5], [0, 6]);
   const filmFilter = useTransform(filmBlur, (b) => `blur(${b}px)`);
 
   // The cut itself: the x-ray arrives over-scaled and settles.
@@ -188,7 +189,7 @@ export function HowItWorks3D() {
 
               {/* Zone rail + parts list — also the accessible rendering of the
                   diagram, since every part here is real text. */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 'var(--s5)', alignItems: 'start', marginTop: 'var(--s5)' }}>
+              <div className="teardown-cols">
                 <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 'var(--s3)' }}>
                   {ZONES.map((z) => {
                     const on = reduced || showAll || activeZone === z.id;
@@ -206,7 +207,7 @@ export function HowItWorks3D() {
                   })}
                 </ul>
 
-                <div style={{ gridColumn: 'span 2', minWidth: 0 }}>
+                <div style={{ minWidth: 0 }}>
                   <ul style={{ listStyle: 'none', display: 'grid', gap: 1, background: 'var(--hairline)', border: '1px solid var(--hairline)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
                     {(reduced || showAll ? PARTS : activeParts).map((pt) => (
                       <motion.li
@@ -235,7 +236,7 @@ export function HowItWorks3D() {
                   opacity: scrollHint, zIndex: 3,
                 }}
               >
-                <span className="mono" style={{ color: 'var(--mute)', letterSpacing: '0.24em' }}>SCROLL</span>
+                <span className="mono tracked-center" style={{ color: 'var(--mute)' }}>SCROLL</span>
                 <div style={{ width: 1, height: 36, background: 'linear-gradient(to bottom, var(--accent), transparent)' }} />
               </motion.div>
             )}
@@ -273,17 +274,13 @@ export function HowItWorks3D() {
               {PIPELINE.map((s) => {
                 const cloud = s.where === 'Encrypted cloud';
                 return (
-                  <motion.li
-                    key={s.step}
-                    variants={rise}
-                    style={{ background: 'var(--canvas-card)', padding: 'var(--s5)', display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr) auto', gap: 'var(--s5)', alignItems: 'start' }}
-                  >
+                  <motion.li key={s.step} variants={rise} className="pipeline-row">
                     <span className="mono" style={{ color: 'var(--accent)' }}>{s.step}</span>
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <h3 className="display-sm" style={{ marginBottom: 'var(--s2)' }}>{s.title}</h3>
                       <p className="body-mute" style={{ fontSize: '0.9375rem', maxWidth: '62ch' }}>{s.detail}</p>
                     </div>
-                    <span className={`tag ${cloud ? 'tag-warn' : 'tag-ok'}`} style={{ whiteSpace: 'nowrap' }}>
+                    <span className={`tag pipeline-tag ${cloud ? 'tag-warn' : 'tag-ok'}`} style={{ whiteSpace: 'nowrap' }}>
                       <span className="dot" />{s.where}
                     </span>
                   </motion.li>

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { rise, riseGroup, hairlineDraw, charGroup, charItem, chars, inView, accentIgnite } from '../animations/obsidian';
+import { rise, riseGroup, hairlineDraw, charGroup, charItem, inView, accentIgnite } from '../animations/obsidian';
 
 /** Scroll-revealed block. The workhorse — wraps most content on the site. */
 export function Reveal({ children, className = '', delay = 0, as = 'div' }: {
@@ -54,6 +54,16 @@ export function Rule({ className = '' }: { className?: string }) {
  * than a stream of single letters.
  */
 export function CharCascade({ text, className = '' }: { text: string; className?: string }) {
+  // Group by word, then animate characters INSIDE each word.
+  //
+  // Animating a flat list of characters is the obvious implementation and it
+  // is broken: every character becomes its own inline-block, and a browser may
+  // line-break between any two inline-blocks. So a heading wraps mid-word —
+  // "insi" on one line, "de." on the next — with no word boundary protecting
+  // it. Wrapping each word in a nowrap box makes the word atomic again, and
+  // the plain space rendered between those boxes is what stays breakable.
+  const words = text.split(' ');
+
   return (
     <motion.span
       className={className}
@@ -61,12 +71,25 @@ export function CharCascade({ text, className = '' }: { text: string; className?
       initial="hidden"
       animate="visible"
       aria-label={text}
-      style={{ display: 'inline-block' }}
     >
-      {chars(text).map((c, i) => (
-        <motion.span key={i} variants={charItem} aria-hidden="true" style={{ display: 'inline-block', whiteSpace: 'pre' }}>
-          {c}
-        </motion.span>
+      {words.map((word, wi) => (
+        <span key={wi}>
+          <span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
+            {/* Array.from, not split(''), so emoji and accented pairs are not
+                torn in half into broken code units. */}
+            {Array.from(word).map((c, ci) => (
+              <motion.span
+                key={ci}
+                variants={charItem}
+                aria-hidden="true"
+                style={{ display: 'inline-block' }}
+              >
+                {c}
+              </motion.span>
+            ))}
+          </span>
+          {wi < words.length - 1 ? ' ' : null}
+        </span>
       ))}
     </motion.span>
   );

@@ -37,6 +37,14 @@ export function AmbientVideo({
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Same recovery as ScrubVideo: the loadeddata event can fire before the
+  // React handler binds (cache-satisfied preload), so check the element's
+  // readyState on mount — HAVE_CURRENT_DATA means it already happened.
+  useEffect(() => {
+    const v = ref.current;
+    if (v && v.readyState >= 2) setPlayable(true);
+  }, []);
+
   useEffect(() => {
     if (!playable || reduced) return;
     const v = ref.current;
@@ -60,11 +68,10 @@ export function AmbientVideo({
         aspectRatio: variant === 'inline' ? '2.39 / 1' : undefined,
         overflow: 'hidden',
         borderRadius: variant === 'inline' ? 'var(--radius)' : undefined,
-        border: variant === 'inline' ? '1px solid var(--hairline)' : undefined,
-        // The stand-in. A faint off-centre amber wash over the canvas, which
-        // matches the palette the finished clips are graded to.
-        background:
-          'radial-gradient(120% 100% at 70% 30%, rgba(255,107,26,0.10), transparent 60%), var(--canvas-soft)',
+        // No fallback chrome: when a clip cannot play, the component is
+        // simply invisible against the page canvas. A painted placeholder
+        // read as an unwanted "mailbox" box — removed per review.
+        background: 'transparent',
         ...style,
       }}
     >
@@ -89,9 +96,10 @@ export function AmbientVideo({
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         tabIndex={-1}
         onLoadedData={() => setPlayable(true)}
+        onCanPlay={() => setPlayable(true)}
         onError={() => setPlayable(false)}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',

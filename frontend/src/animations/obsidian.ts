@@ -115,8 +115,14 @@ export const accentIgnite: Variants = {
 /** Standard viewport config — reveal once, slightly before fully in view. */
 export const inView = { once: true, margin: '-12% 0px -12% 0px' } as const;
 
-/** Split a string into character spans for `charGroup` / `charItem`.
- *  Spaces become non-breaking so words do not collapse mid-cascade. */
+/**
+ * @deprecated Do not use for a per-character cascade — it causes a real layout
+ * bug. A flat character list makes every letter its own inline-block, and
+ * browsers may line-break between any two inline-blocks, so headings wrap
+ * mid-word and strand a letter on the line above. CharCascade in
+ * components/Primitives.tsx groups by word first for exactly this reason; do
+ * not "simplify" it back to a flat map over this helper.
+ */
 export function chars(text: string): string[] {
   return text.split('').map((c) => (c === ' ' ? ' ' : c));
 }
