@@ -1,39 +1,12 @@
 @import "tailwindcss";
 
-/* Google Fonts — loaded via index.html <link> for performance */
-/* The full ARGES design system from the HTML prototype */
-@import "./arges.css";
+/* Fonts load via <link> in index.html for performance.
+   Obsidian is the whole design system — see obsidian.css for the rules. */
+@import "./obsidian.css";
 
-/* Glass surface utilities used by HowItWorks3D and GlassPanel. These class
-   names were referenced in JSX but never defined, so those surfaces rendered
-   flat (no background, blur or border). Declared in the components layer so
-   Tailwind border/background utilities on the same element still win. */
 @layer components {
-  /* Premium SaaS display face (Space Grotesk). Real weight cuts exist, so
-     Tailwind font-weight / tracking utilities compose normally. */
-  .font-display {
-    font-family: var(--font-display);
-  }
-  .glass {
-    background: var(--glass);
-    backdrop-filter: blur(40px) saturate(1.5);
-    -webkit-backdrop-filter: blur(40px) saturate(1.5);
-    border: 0.5px solid var(--glass-border);
-  }
-  /* Specular highlight along the top edge — the glass "reflection". */
-  .specular { position: relative; overflow: hidden; }
-  .specular::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 45%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
-    pointer-events: none;
-  }
+  /* Declared in the components layer so Tailwind utilities on the same
+     element still win (a plain unlayered rule would outrank them). */
+  .font-display { font-family: var(--font); font-weight: 400; }
+  .font-mono { font-family: var(--mono); }
 }
-
-/* Role theme overrides (for dashboards) */
-.theme-admin { --orange: #FF6B1A; --orange-bright: #FF8533; --orange-glow: rgba(255,107,26,0.4); }
-.theme-head { --orange: #4CAF50; --orange-bright: #66BB6A; --orange-glow: rgba(76,175,80,0.4); }
-.theme-member { --orange: #42A5F5; --orange-bright: #64B5F6; --orange-glow: rgba(66,165,245,0.4); }
-.theme-helper { --orange: #AB47BC; --orange-bright: #CE93D8; --orange-glow: rgba(171,71,188,0.4); }

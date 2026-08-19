@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Spatial Cursor — the visionOS-style dot + ring cursor.
- * Renders the `.cursor-dot` / `.cursor-ring` elements defined in arges.css so
- * the prototype's exact sizing (32px ring, 80px hover) and tint are honored.
- * Ring lerps toward the mouse with easing; grows + tints orange on hover.
+ * The dot + ring cursor. Styling lives in obsidian.css (`.cursor-dot` /
+ * `.cursor-ring`); this only moves them.
+ *
+ * It renders alongside the native cursor rather than replacing it — there is
+ * deliberately no `body { cursor: none }`, so the pointer never disappears if
+ * the script fails. The ring lerps toward the mouse and takes the accent on
+ * interactive elements, which is the only place orange appears continuously.
  */
 export function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
