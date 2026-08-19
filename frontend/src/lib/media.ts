@@ -49,4 +49,17 @@ export const MEDIA = {
 
   /** Scene 5 · 8s · Landing, behind the closing CTA. City at dusk. */
   network: '/media/arges-network.mp4?v=2',
+
+  /**
+   * Scenes 6–8 · /3d teardown backdrops, one per zone.
+   *
+   * These sit UNDER the x-ray schematic and crossfade as the active zone
+   * changes, so they must stay dark and low-contrast — the orange labels have
+   * to stay readable on top. If a replacement clip is bright or busy in the
+   * middle of frame it will fight the diagram; lower the layer opacity in
+   * HowItWorks3D rather than regrading the schematic.
+   */
+  templeLeft:  '/media/arges-temple-left.mp4?v=2',
+  templeFront: '/media/arges-temple-front.mp4?v=2',
+  templeRight: '/media/arges-temple-right.mp4?v=2',
 } as const;

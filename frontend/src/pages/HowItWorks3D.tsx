@@ -33,6 +33,13 @@ import { MEDIA } from '../lib/media';
  *   0.90 – 1.00   everything lit, signal trace running
  */
 
+/** One backdrop clip per teardown zone, keyed to the same Zone ids. */
+const ZONE_CLIPS: { id: Zone; src: string }[] = [
+  { id: 'left',  src: MEDIA.templeLeft },
+  { id: 'front', src: MEDIA.templeFront },
+  { id: 'right', src: MEDIA.templeRight },
+];
+
 const PIPELINE = [
   { step: '01', title: '"ARGES, read this sign."', where: 'On device', detail: 'The SPH0645 microphone array picks up the wake word. Porcupine matches it locally in under 3.5% CPU — no audio leaves the frame to do it.' },
   { step: '02', title: 'The camera takes one frame.', where: 'On device', detail: 'Intent routes to OCR, and the snap-fit front camera captures a single frame of whatever the wearer is facing.' },
@@ -142,6 +149,36 @@ export function HowItWorks3D() {
               }}
             >
               <ScrubVideo src={MEDIA.hero} poster={MEDIA.heroPoster} progress={filmProgress} />
+            </motion.div>
+
+            {/* Layer 1.5 — per-zone footage under the schematic.
+                All three mount at once and crossfade on opacity rather than
+                swapping a src: swapping would restart loading on every zone
+                change and stall the handoff. Together they are ~3MB, which is
+                worth it for a transition that never hitches.
+                The radial mask keeps the middle of frame quiet so the orange
+                labels stay legible over it. */}
+            <motion.div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                opacity: reduced ? 0 : xrayOpacity,
+                maskImage: 'radial-gradient(80% 80% at 50% 50%, rgba(0,0,0,0.22) 15%, rgba(0,0,0,1) 75%)',
+                WebkitMaskImage: 'radial-gradient(80% 80% at 50% 50%, rgba(0,0,0,0.22) 15%, rgba(0,0,0,1) 75%)',
+              }}
+            >
+              {ZONE_CLIPS.map(({ id, src }) => (
+                <motion.div
+                  key={id}
+                  style={{ position: 'absolute', inset: 0 }}
+                  animate={{ opacity: activeZone === id ? 0.34 : 0 }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <AmbientVideo src={src} vignette={false} />
+                </motion.div>
+              ))}
             </motion.div>
 
             {/* Layer 2 — the title, over the film only */}
