@@ -26,6 +26,18 @@ export const MEDIA = {
   /** Scene 1 · 8s · /3d Act I. Scroll-scrubbed; must end pushing into the temple. */
   hero: '/media/arges-hero.mp4?v=2',
 
+  /**
+   * The hero's own first frame, extracted with ffmpeg.
+   *
+   * A poster must be a frame OF the clip it fronts. This slot previously
+   * pointed at src/assets/hero.png — a 360px purple isometric box left over
+   * from a template — which `object-fit: cover` stretched across the whole
+   * viewport into a large blurred shape that read as an envelope. Regenerate
+   * with:
+   *   ffmpeg -i arges-hero.mp4 -frames:v 1 -q:v 4 arges-hero-poster.jpg
+   */
+  heroPoster: '/media/arges-hero-poster.jpg?v=2',
+
   /** Scene 2 · 8s · /3d, between the teardown and the pipeline. Abstract light. */
   signal: '/media/arges-signal.mp4?v=2',
 

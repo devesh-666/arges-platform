@@ -8,7 +8,6 @@ import { ScrubVideo } from '../components/ScrubVideo';
 import { AmbientVideo } from '../components/AmbientVideo';
 import { inView, rise } from '../animations/obsidian';
 import { MEDIA } from '../lib/media';
-import poster from '../assets/hero.png';
 
 /**
  * How it works.
@@ -142,7 +141,7 @@ export function HowItWorks3D() {
                 filter: reduced ? 'blur(6px)' : filmFilter,
               }}
             >
-              <ScrubVideo src={MEDIA.hero} poster={poster} progress={filmProgress} />
+              <ScrubVideo src={MEDIA.hero} poster={MEDIA.heroPoster} progress={filmProgress} />
             </motion.div>
 
             {/* Layer 2 — the title, over the film only */}
