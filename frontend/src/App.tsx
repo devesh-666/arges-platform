@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Cursor } from './components/Cursor';
+import { Splash } from './components/Splash';
 import { Landing } from './pages/Landing';
 
 // Lazy load all pages except Landing (first paint)
@@ -11,6 +12,9 @@ const MemberDashboard = lazy(() => import('./pages/MemberDashboard').then(m => (
 const HelperDashboard = lazy(() => import('./pages/HelperDashboard').then(m => ({ default: m.HelperDashboard })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const HowItWorks3D = lazy(() => import('./pages/HowItWorks3D').then(m => ({ default: m.HowItWorks3D })));
+// Ferrari x Clay landing rebuild. To promote it to the site root, swap the
+// element on the "/" route below for <LandingV2 /> and drop this one.
+const LandingV2 = lazy(() => import('./pages/LandingV2').then(m => ({ default: m.LandingV2 })));
 
 function Loading() {
   return (
@@ -24,10 +28,12 @@ function Loading() {
 export default function App() {
   return (
     <BrowserRouter>
+      <Splash />
       <Cursor />
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/v2" element={<LandingV2 />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/family" element={<FamilyDashboard />} />

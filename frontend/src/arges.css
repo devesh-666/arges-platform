@@ -11,8 +11,8 @@
   --orange:#FF6B1A; --orange-bright:#FF8533; --orange-glow:rgba(255,107,26,0.4);
   --orange-rgb:255,107,26;
   --white:#fff; --muted:#A6A6B0; --muted-2:#8E8E9A;
-  /* Space Grotesk — techy premium display face for every heading and big number */
-  --font-display:'Space Grotesk','Bricolage Grotesque',sans-serif;
+  /* Syne — signature display face per the ARGES UI build guide */
+  --font-display:'Syne','Bricolage Grotesque',sans-serif;
   --yellow:#F9A825;
   --shadow-spatial:0 24px 80px rgba(0,0,0,0.7),0 8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -1px 0 rgba(0,0,0,0.3);
   --shadow-float:0 50px 140px rgba(0,0,0,0.8),0 20px 50px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -1px 0 rgba(0,0,0,0.4);
@@ -28,7 +28,7 @@ html{scroll-behavior:smooth}
 body{
   background:var(--bg-1);
   color:var(--white);
-  font-family:'Hanken Grotesk',sans-serif;
+  font-family:'Syne','Hanken Grotesk',sans-serif;
   overflow-x:hidden;
   /* Tailwind's preflight sets line-height:1.5 on <html>, which the prototype does
      not have. Inherited, it made every text block ~8px taller than the prototype
@@ -147,9 +147,9 @@ a{color:inherit;text-decoration:none}
 }
 .hero-title{
   font-family:var(--font-display);
-  font-weight:600;
-  font-size:clamp(3rem,10vw,8rem);
-  line-height:0.96;letter-spacing:-0.02em;
+  font-weight:800;
+  font-size:clamp(3rem,10vw,8.5rem);
+  line-height:0.92;letter-spacing:-0.03em;
 }
 .hero-title .ln{display:block;overflow:hidden}
 .hero-title .ln>span{display:inline-block;transform:translateY(110%);animation:lineUp 1.2s cubic-bezier(0.16,1,0.3,1) forwards}
@@ -236,7 +236,7 @@ section{padding:160px 5vw;position:relative;z-index:1}
 .container{max-width:1280px;margin:0 auto;position:relative;z-index:1}
 .section-head{margin-bottom:80px;max-width:900px}
 .label{font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.24em;text-transform:uppercase;color:var(--orange);display:block;margin-bottom:22px}
-.section-title{font-family:var(--font-display);font-weight:600;font-size:clamp(2.2rem,4.8vw,4.2rem);letter-spacing:-0.02em;line-height:1.05}
+.section-title{font-family:var(--font-display);font-weight:700;font-size:clamp(2.2rem,4.8vw,4.2rem);letter-spacing:-0.03em;line-height:1.02}
 .section-intro{color:var(--muted);font-size:1.02rem;max-width:560px;margin-top:28px;line-height:1.7}
 
 /* ==================== ECOSYSTEM (spatial cards floating at different depths) ==================== */
@@ -372,7 +372,7 @@ section{padding:160px 5vw;position:relative;z-index:1}
   box-shadow:0 40px 120px rgba(0,0,0,0.6),0 0 80px rgba(255,107,26,0.06),inset 0 1px 0 rgba(255,255,255,0.12);
   position:relative;overflow:hidden;
 }
-.cta-card h2{font-family:var(--font-display);font-weight:600;font-size:clamp(2.2rem,4.8vw,3.8rem);letter-spacing:-0.02em;line-height:1.05;margin-bottom:22px}
+.cta-card h2{font-family:var(--font-display);font-weight:700;font-size:clamp(2.2rem,4.8vw,3.8rem);letter-spacing:-0.03em;line-height:1.02;margin-bottom:22px}
 .cta-card p{color:var(--muted);margin-bottom:42px;font-size:1.05rem}
 
 /* ==================== FOOTER ==================== */
@@ -843,3 +843,144 @@ button.toggle:focus-visible { outline-offset: 4px; }
 /* The decorative cursor elements are dead code now (real cursor restored).
    Hide them defensively in case any page still renders the divs. */
 .cursor-dot, .cursor-ring { display: none !important; }
+
+/* ============================================================
+   SECTIONS FROM THE UI BUILD GUIDE
+   Problem stats | marquee | how-it-works timeline | hardware
+   showcase | comparison table | testimonials | splash screen
+   ============================================================ */
+
+/* --- Problem stats band --- */
+.problem{padding:120px 24px 90px;text-align:center;position:relative;z-index:1}
+.problem-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:1100px;margin:0 auto 44px}
+.problem-stat{padding:36px 20px;border-radius:24px;background:var(--glass);border:0.5px solid var(--glass-border);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);position:relative;overflow:hidden}
+.problem-stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:0;transition:opacity .4s}
+.problem-stat:hover::after{opacity:1}
+.problem-num{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(2.6rem,4.5vw,4rem);color:var(--orange);line-height:1;font-variant-numeric:tabular-nums}
+.problem-lbl{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-top:14px;line-height:1.7}
+.problem-line{max-width:640px;margin:0 auto;font-size:1.05rem;color:var(--muted);line-height:1.7}
+.problem-line em{color:#fff;font-style:normal;font-weight:600}
+@media(max-width:900px){.problem-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.problem-stats{grid-template-columns:1fr}}
+
+/* --- Marquee ticker --- */
+.marquee{overflow:hidden;padding:26px 0;border-top:0.5px solid var(--glass-border);border-bottom:0.5px solid var(--glass-border);position:relative;z-index:1;background:rgba(255,255,255,0.015)}
+.marquee-track{display:flex;gap:0;width:max-content;animation:marqueeScroll 34s linear infinite}
+.marquee-track span{font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);padding:0 34px;white-space:nowrap}
+.marquee-track span i{font-style:normal;color:var(--orange);padding-right:34px}
+@keyframes marqueeScroll{to{transform:translateX(-50%)}}
+
+/* --- How it works timeline --- */
+.how{padding:110px 24px}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;position:relative;max-width:1200px;margin:60px auto 0}
+.timeline::before{content:'';position:absolute;top:26px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,rgba(255,107,26,0.05),rgba(255,107,26,0.5),rgba(255,107,26,0.05))}
+.tl-step{text-align:center;padding:0 8px;position:relative}
+.tl-dot{width:52px;height:52px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;background:var(--bg-2);border:1px solid rgba(255,107,26,0.35);font-family:'Instrument Serif',serif;font-style:italic;font-size:1.3rem;color:var(--orange);position:relative;z-index:1;box-shadow:0 0 24px rgba(255,107,26,0.15)}
+.tl-title{font-weight:700;font-size:0.95rem;margin-bottom:8px;letter-spacing:-0.01em}
+.tl-desc{font-size:0.78rem;color:var(--muted);line-height:1.6}
+@media(max-width:900px){.timeline{grid-template-columns:1fr;gap:34px}.timeline::before{display:none}.tl-step{display:grid;grid-template-columns:52px 1fr;gap:16px;text-align:left}.tl-dot{margin:0}}
+
+/* --- Hardware showcase --- */
+.hardware{padding:110px 24px}
+.hw-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:1150px;margin:56px auto 0;align-items:center}
+.hw-visual{height:440px;border-radius:28px;background:radial-gradient(ellipse at 50% 120%,rgba(255,107,26,0.12),transparent 60%),var(--glass);border:0.5px solid var(--glass-border);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);position:relative;overflow:hidden}
+.hw-visual .hw-tag{position:absolute;top:18px;left:20px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--orange)}
+.hw-specs{border-radius:24px;background:var(--glass);border:0.5px solid var(--glass-border);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);padding:8px 26px}
+.hw-specs .row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:0.5px solid rgba(255,255,255,0.05);font-size:0.86rem}
+.hw-specs .row:last-of-type{border-bottom:none}
+.hw-specs .k{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+.hw-specs .v{font-weight:600}
+.hw-cost{margin-top:22px;text-align:center}
+.hw-cost .amt{font-family:'Instrument Serif',serif;font-style:italic;font-size:2.4rem;color:var(--orange)}
+.hw-cost .sub{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+@media(max-width:900px){.hw-grid{grid-template-columns:1fr}}
+
+/* --- Comparison table --- */
+.compare{padding:110px 24px}
+.compare-wrap{max-width:1050px;margin:56px auto 0;overflow-x:auto;border-radius:24px;background:var(--glass);border:0.5px solid var(--glass-border);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4)}
+.compare-wrap table{width:100%;min-width:640px;border-collapse:collapse}
+.compare-wrap th{padding:18px 16px;font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);border-bottom:0.5px solid var(--glass-border);text-align:center}
+.compare-wrap th:first-child,.compare-wrap td:first-child{text-align:left;padding-left:26px}
+.compare-wrap td{padding:15px 16px;font-size:0.85rem;text-align:center;color:var(--muted);border-bottom:0.5px solid rgba(255,255,255,0.04)}
+.compare-wrap td:first-child{color:#fff;font-weight:600}
+.compare-wrap tr:last-child td{border-bottom:none}
+.compare-wrap .yes{color:var(--orange);font-weight:700}
+.compare-wrap .no{color:var(--muted-2)}
+.compare-wrap th.arges,.compare-wrap td.arges{background:rgba(255,107,26,0.07);color:#fff;font-weight:600}
+.compare-wrap th.arges{color:var(--orange);border-left:0.5px solid rgba(255,107,26,0.25);border-right:0.5px solid rgba(255,107,26,0.25)}
+.compare-wrap td.arges{border-left:0.5px solid rgba(255,107,26,0.25);border-right:0.5px solid rgba(255,107,26,0.25)}
+
+/* --- Testimonials --- */
+.testi{padding:110px 24px}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1150px;margin:56px auto 0}
+.testi-card{padding:34px 30px;border-radius:24px;background:var(--glass);border:0.5px solid var(--glass-border);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);position:relative;transition:all .4s cubic-bezier(0.16,1,0.3,1)}
+.testi-card:hover{transform:translateY(-8px);border-color:rgba(255,107,26,0.3)}
+.testi-quote{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.15rem;line-height:1.6;color:#fff;margin-bottom:24px}
+.testi-quote::before{content:'\201C';color:var(--orange);font-size:2rem;line-height:0;vertical-align:-0.3em;padding-right:6px}
+.testi-who{display:flex;align-items:center;gap:12px}
+.testi-ava{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#000}
+.testi-name{font-weight:600;font-size:0.88rem}
+.testi-role{font-size:0.72rem;color:var(--muted)}
+.testi-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted-2);margin-top:34px}
+@media(max-width:900px){.testi-grid{grid-template-columns:1fr}}
+
+/* --- Splash screen --- */
+.splash{position:fixed;inset:0;z-index:10000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.splash-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(255,107,26,0.14),transparent 55%);animation:splashGlow 2.6s ease-in-out infinite}
+@keyframes splashGlow{0%,100%{opacity:0.7}50%{opacity:1}}
+.splash-logo-wrap{position:relative;width:130px;height:130px;display:flex;align-items:center;justify-content:center;margin-bottom:34px}
+.splash-logo{width:64px;height:64px;filter:drop-shadow(0 0 18px rgba(255,107,26,0.5))}
+.splash-ring{position:absolute;border-radius:50%;border:0.5px solid rgba(255,107,26,0.4)}
+.splash-ring.ring-a{inset:0;border-top-color:#FF6B1A;animation:splashSpin 1.4s linear infinite}
+.splash-ring.ring-b{inset:16px;border-bottom-color:#FF8533;border-color:rgba(255,107,26,0.18);animation:splashSpin 2s linear infinite reverse}
+@keyframes splashSpin{to{transform:rotate(360deg)}}
+.splash-word{display:flex;gap:10px}
+.splash-letter-mask{display:inline-block;overflow:hidden}
+.splash-letter{display:inline-block;font-family:var(--font-display);font-weight:800;font-size:2.6rem;letter-spacing:0.06em;color:#fff}
+.splash-tagline{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.26em;text-transform:uppercase;color:var(--orange);margin-top:18px}
+.splash-bar{position:absolute;bottom:64px;width:200px;height:1px;background:rgba(255,255,255,0.1);overflow:hidden}
+.splash-bar span{display:block;height:100%;width:100%;background:linear-gradient(90deg,#FF6B1A,#FFB266);transform:translateX(-100%);animation:splashFill 1.6s cubic-bezier(0.16,1,0.3,1) 1.3s forwards}
+@keyframes splashFill{to{transform:translateX(0)}}
+
+@media (prefers-reduced-motion: reduce){
+  .marquee-track{animation:none}
+  .splash-ring{animation:none}
+  .splash-bar span{animation-duration:0.01s}
+}
+
+/* New logo image sizing — mirrors the old svg sizing rules */
+.nav-logo img{width:26px;height:auto}
+.sidebar-logo img{width:26px;height:auto}
+.logo img{width:56px;height:auto;margin:0 auto}
+.splash-logo{width:64px;height:auto}
+
+/* ── Fullscreen video splash (media/logo-intro.mp4) ─────────────────────────
+   Replaces the CSS-drawn splash. The base `.splash` rule above still supplies
+   position/z-index/black canvas; these add the video fill and exit. The 1.06
+   scale overscans the 1920x1080 frame so no letterbox edge or corner artefact
+   can appear at any viewport ratio (the Gemini watermark is already burned out
+   of the asset itself with ffmpeg delogo). */
+.splash{cursor:pointer}
+.splash-video{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  transform:scale(1.06);
+  /* lift the phoenix off the near-black plate without washing the background */
+  filter:saturate(1.05) contrast(1.04);
+}
+.splash-skip{
+  position:absolute;right:32px;bottom:32px;z-index:2;
+  background:transparent;border:1px solid rgba(255,255,255,0.28);
+  color:rgba(255,255,255,0.72);
+  font-family:'JetBrains Mono',ui-monospace,monospace;
+  font-size:0.66rem;letter-spacing:0.18em;text-transform:uppercase;
+  padding:11px 20px;border-radius:0;cursor:pointer;
+  transition:color 0.3s,border-color 0.3s;
+}
+.splash-skip:hover,.splash-skip:focus-visible{color:#fff;border-color:#FF6B1A}
+.splash.is-leaving{opacity:0;transition:opacity 0.7s cubic-bezier(0.16,1,0.3,1)}
+
+@media (max-width:640px){
+  .splash-skip{right:16px;bottom:20px;padding:9px 15px}
+}

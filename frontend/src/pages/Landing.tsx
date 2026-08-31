@@ -52,6 +52,74 @@ const FAQS = [
   { q: 'What if the user falls?', a: 'The ADXL345 detects the fall (99.4% accuracy) and triggers Guardian SOS — sending live GPS, audio, and video to family.' },
 ];
 
+const PROBLEM_STATS = [
+  { to: 15, suffix: 'M+', label: 'Blind in India' },
+  { to: 90, suffix: '%', label: "Can't afford existing devices" },
+  { to: 4.5, prefix: '₹', suffix: 'L', label: 'OrCam price (premium)', decimals: 1 },
+  { to: 0, suffix: '', label: 'Family dashboards (competitors)' },
+];
+
+const MARQUEE_ITEMS = ['Family Connect', 'OmniAccess', 'Echo Network', 'Spatial Sound', 'Companion AI', 'HapticBand', 'MediScan', 'Zero-Knowledge E2EE', 'Bhashini 32+ Languages', 'Fall Detection', 'Currency Verify', 'Scene Description'];
+
+const HOW_STEPS = [
+  { n: '1', title: '"ARGES, read this sign"', desc: 'Wake word detected fully offline via Porcupine — under 3.5% CPU.' },
+  { n: '2', title: 'Intent parsed', desc: 'The word "read" triggers OCR mode on the 1080p camera.' },
+  { n: '3', title: 'Text extracted on-device', desc: 'Tesseract OCR runs on the glasses — no internet needed.' },
+  { n: '4', title: 'Translated if needed', desc: 'Bhashini cloud translates into 32+ Indian languages.' },
+  { n: '5', title: 'Spoken aloud', desc: 'Bone-conduction speaker + HapticBand confirm in under 1.5s.' },
+];
+
+const SPECS = [
+  ['Compute', 'Raspberry Pi 4 (4GB)'],
+  ['Camera', '1080p Sony sensor'],
+  ['Battery', '6000mAh — 8+ hours'],
+  ['Audio', 'Bone-conduction + 3D binaural'],
+  ['Sensors', 'GPS, accelerometer, mic array'],
+  ['Feedback', 'HapticBand directional zones'],
+  ['Weight', '~110g'],
+  ['Charging', 'USB-C + solar strap'],
+];
+
+type CompareCell = string | boolean;
+const COMPARE_ROWS: Array<[string, CompareCell, CompareCell, CompareCell, CompareCell, CompareCell]> = [
+  ['Price', '₹4,50,000', '₹30,000', '₹27,000', '₹17,000+', '₹9,999'],
+  ['Subscription', 'No', 'Cloud', 'No', '$200/yr', 'Optional'],
+  ['Family Dashboard', '', '', '', '', true],
+  ['SOS Live Video', '', '', '', '', true],
+  ['Community Mesh', '', '', '', '', true],
+  ['Sight-Equivalent Device Use', '', '', '', '', true],
+  ['Spatial Audio', '', '', '', '', true],
+  ['Emotional Wellness AI', '', 'Partial', '', '', true],
+  ['Offline-First AI', true, '', true, '', true],
+];
+
+const TESTIMONIALS = [
+  { q: 'For the first time in eleven years, my father walked to the temple on his own. The glasses told him every step, and I watched him arrive safely from my phone.', name: 'Lakshmi R.', role: 'Daughter of a ARGES One user, Coimbatore', grad: 'linear-gradient(135deg,#FFB266,#FF6B1A)' },
+  { q: 'The HapticBand is the closest thing to a sixth sense. I feel directions instead of hearing instructions — it is quiet dignity, not a gadget shouting at me.', name: 'Arjun M.', role: 'ARGES beta tester, Chennai', grad: 'linear-gradient(135deg,#64B5F6,#1565C0)' },
+  { q: 'As a volunteer on the Echo Network, I answered a hazard alert in under five seconds. This community idea does not exist anywhere else in the world.', name: 'Priya S.', role: 'Echo Network volunteer, Salem', grad: 'linear-gradient(135deg,#CE93D8,#8E24AA)' },
+];
+
+// Numbers count up when scrolled into view (build guide: animated counters)
+function CountUp({ to, decimals = 0, prefix = '', suffix = '' }: { to: number; decimals?: number; prefix?: string; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const start = performance.now();
+    const dur = 1600;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      setVal(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to]);
+  return <span ref={ref}>{prefix}{val.toFixed(decimals)}{suffix}</span>;
+}
+
 // Spotlight follows the cursor (sets --mx/--my on the card)
 function trackSpotlight(e: React.MouseEvent<HTMLElement>) {
   const el = e.currentTarget;
@@ -93,7 +161,7 @@ export function Landing() {
       {/* NAVBAR (floating pill) */}
       <nav className={`nav${navScrolled ? ' scrolled' : ''}`} id="nav">
         <Link to="/" className="nav-logo">
-          <svg viewBox="0 0 100 100"><path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z" stroke="#FF6B1A" strokeWidth="3" fill="none"/><circle cx="50" cy="50" r="9" stroke="#FF6B1A" strokeWidth="3" fill="none"/><circle cx="50" cy="50" r="3.5" fill="#FF6B1A"/></svg>
+          <img src="/logo-mark.png" alt="" style={{ height: 'auto', display: 'block' }} />
           ARGES
         </Link>
         <div className="nav-links">
@@ -158,11 +226,47 @@ export function Landing() {
         </div>
       </section>
 
+      {/* PROBLEM — stats band with count-up */}
+      <section className="problem" id="problem">
+        <div className="container">
+          <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head">
+            <span className="label">/ 01 — The Problem</span>
+            <h2 className="section-title">The world failed<br/><span className="grad-text">15 million people.</span></h2>
+          </motion.div>
+          <motion.div
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+            className="problem-stats"
+          >
+            {PROBLEM_STATS.map(s => (
+              <motion.div variants={reveal} className="problem-stat" key={s.label}>
+                <div className="problem-num"><CountUp to={s.to} decimals={s.decimals ?? 0} prefix={s.prefix ?? ''} suffix={s.suffix} /></div>
+                <div className="problem-lbl">{s.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+          <motion.p variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} className="problem-line">
+            The white cane misses overhead hazards. Premium devices cost a year&apos;s wages. Nobody connects the blind user to their family. <em>ARGES fixes all three.</em>
+          </motion.p>
+        </div>
+      </section>
+
+      {/* MARQUEE ticker */}
+      <div className="marquee" aria-hidden="true">
+        <div className="marquee-track">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <span key={i}>{item}<i>·</i></span>
+          ))}
+        </div>
+      </div>
+
       {/* ECOSYSTEM */}
       <section id="ecosystem">
         <div className="container">
           <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head">
-            <span className="label">/ 01 — The Solution</span>
+            <span className="label">/ 02 — The Solution</span>
             <h2 className="section-title">Not a gadget. <span className="grad-text">An ecosystem.</span></h2>
             <p className="section-intro">Five spatial layers, floating in perfect harmony. Each builds on the one below — hardware, AI, family, devices, community. Move your cursor to feel the depth.</p>
           </motion.div>
@@ -196,7 +300,7 @@ export function Landing() {
       <section id="features">
         <div className="container">
           <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head">
-            <span className="label">/ 02 — Differentiators</span>
+            <span className="label">/ 03 — Differentiators</span>
             <h2 className="section-title">Eight things <span className="grad-text">no other glasses</span> can do.</h2>
             <p className="section-intro">Each panel floats in its own spatial layer. Hover to illuminate — the spotlight follows your cursor through depth.</p>
           </motion.div>
@@ -219,11 +323,98 @@ export function Landing() {
         </div>
       </section>
 
+      {/* HOW IT WORKS — timeline */}
+      <section id="how" className="how">
+        <div className="container">
+          <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head" style={{ textAlign: 'center', margin: '0 auto' }}>
+            <span className="label" style={{ display: 'block' }}>/ 04 — How It Works</span>
+            <h2 className="section-title" style={{ marginTop: '20px' }}>From voice to answer in<br/><span className="grad-text">under 1.5 seconds.</span></h2>
+            <p className="section-intro">Every request follows the same five-step pipeline. Experience it in full 3D on the <Link to="/3d" style={{ color: 'var(--orange)' }}>interactive page →</Link></p>
+          </motion.div>
+          <motion.div
+            variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+            className="timeline"
+          >
+            {HOW_STEPS.map(s => (
+              <motion.div variants={reveal} className="tl-step" key={s.n}>
+                <div className="tl-dot">{s.n}</div>
+                <div>
+                  <div className="tl-title">{s.title}</div>
+                  <div className="tl-desc">{s.desc}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* HARDWARE SHOWCASE */}
+      <section id="hardware" className="hardware">
+        <div className="container">
+          <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head">
+            <span className="label">/ 05 — Hardware</span>
+            <h2 className="section-title">Engineered like a <span className="grad-text">flagship.</span><br/>Priced like a gift.</h2>
+          </motion.div>
+          <div className="hw-grid">
+            <motion.div variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} className="hw-visual">
+              <div className="hw-tag">ARGES One · Live Render</div>
+              <Suspense fallback={<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(255,107,26,0.2)', borderTopColor: '#FF6B1A', animation: 'spin 0.8s linear infinite' }} /></div>}>
+                <GlassesViewer3D />
+              </Suspense>
+            </motion.div>
+            <motion.div variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+              <div className="hw-specs">
+                {SPECS.map(([k, v]) => (
+                  <div className="row" key={k}><span className="k">{k}</span><span className="v">{v}</span></div>
+                ))}
+              </div>
+              <div className="hw-cost">
+                <div className="amt">₹7,085</div>
+                <div className="sub">Demo build cost · ₹5,100/unit at 1,000 units</div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* COMPARISON TABLE */}
+      <section id="compare" className="compare">
+        <div className="container">
+          <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head" style={{ textAlign: 'center', margin: '0 auto' }}>
+            <span className="label" style={{ display: 'block' }}>/ 06 — Comparison</span>
+            <h2 className="section-title" style={{ marginTop: '20px' }}>Premium features. <span className="grad-text">Honest price.</span></h2>
+          </motion.div>
+          <motion.div variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} className="compare-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Feature</th><th>OrCam</th><th>Meta RB</th><th>Oculosense</th><th>Envision</th><th className="arges">ARGES</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_ROWS.map(row => (
+                  <tr key={row[0]}>
+                    {row.map((cell, ci) => (
+                      ci === 0
+                        ? <td key={ci}>{cell}</td>
+                        : <td key={ci} className={ci === 5 ? 'arges' : undefined}>{cell === true ? <span className="yes">✓</span> : cell === '' ? <span className="no">✕</span> : cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </motion.div>
+        </div>
+      </section>
+
       {/* PRICING */}
       <section id="pricing">
         <div className="container">
           <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head">
-            <span className="label">/ 03 — Pricing</span>
+            <span className="label">/ 07 — Pricing</span>
             <h2 className="section-title">Independence shouldn&apos;t cost<br/><span className="grad-text">a fortune.</span></h2>
           </motion.div>
           <motion.div
@@ -247,11 +438,42 @@ export function Landing() {
         </div>
       </section>
 
+      {/* TESTIMONIALS */}
+      <section id="voices" className="testi">
+        <div className="container">
+          <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head" style={{ textAlign: 'center', margin: '0 auto 70px' }}>
+            <span className="label" style={{ display: 'block' }}>/ 08 — Voices</span>
+            <h2 className="section-title" style={{ marginTop: '20px' }}>Early testers, <span className="grad-text">real stories.</span></h2>
+          </motion.div>
+          <motion.div
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+            className="testi-grid"
+          >
+            {TESTIMONIALS.map(t => (
+              <motion.div variants={reveal} className="testi-card" key={t.name}>
+                <div className="testi-quote">{t.q}</div>
+                <div className="testi-who">
+                  <div className="testi-ava" style={{ background: t.grad }}>{t.name[0]}</div>
+                  <div>
+                    <div className="testi-name">{t.name}</div>
+                    <div className="testi-role">{t.role}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+          <div className="testi-note">Illustrative testimonials — replaced with verified user stories at launch</div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section id="faq">
         <div className="container">
           <motion.div variants={blurReveal} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }} className="section-head" style={{ textAlign: 'center', margin: '0 auto 70px' }}>
-            <span className="label" style={{ display: 'block' }}>/ 04 — Questions</span>
+            <span className="label" style={{ display: 'block' }}>/ 09 — Questions</span>
             <h2 className="section-title" style={{ marginTop: '20px' }}>Frequently asked.</h2>
           </motion.div>
           <motion.div
