@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** Cut the intro here — the phoenix is fully formed and lit by ~4s, then holds. */
-const CUT_AT_MS = 5000;
+/**
+ * Safety net only. The splash normally ends on the video's own `ended` event,
+ * so the film always plays to its last frame. This just guarantees the overlay
+ * can never strand someone if `ended` never fires (a decode stall, a browser
+ * that refuses to start playback at all). Comfortably longer than the 10s clip.
+ */
+const FALLBACK_MS = 14000;
 const FADE_MS = 700;
 
 /** Set to false to replay the intro on every page load (useful when demoing). */
@@ -14,10 +19,11 @@ const SESSION_KEY = 'arges-splash';
  * Gemini sparkle watermark erased (ffmpeg `delogo` over the 72x72 mark at
  * 1704,864), so the video needs no cropping to hide it.
  *
- * Skippable by click, Escape/Enter/Space, or the focusable Skip control.
- * Reduced-motion bypasses it entirely. A blocked autoplay does NOT bypass it —
- * the cut timer still runs, so a browser that refuses to start the video shows
- * a brief black hold rather than a splash that flickers out instantly.
+ * There is no skip control and no click-to-dismiss: the film is meant to play
+ * through. Escape still works — a fullscreen overlay with no exit at all is a
+ * trap for anyone who needs to get past it — but it is deliberately silent.
+ *
+ * Reduced-motion bypasses the splash entirely.
  */
 export function Splash() {
   const [show, setShow] = useState(() => {
@@ -53,14 +59,14 @@ export function Splash() {
     }
 
     document.body.style.overflow = 'hidden';
-    timers.current.push(window.setTimeout(dismiss, CUT_AT_MS));
+    timers.current.push(window.setTimeout(dismiss, FALLBACK_MS));
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') dismiss();
+      if (e.key === 'Escape') dismiss();
     };
     window.addEventListener('keydown', onKey);
 
-    // If the browser refuses muted autoplay, let the cut timer end the splash
+    // If the browser refuses muted autoplay, the fallback timer ends the splash
     // rather than tearing it down the instant the promise rejects.
     videoRef.current?.play().catch(() => {});
 
@@ -75,12 +81,7 @@ export function Splash() {
   if (!show) return null;
 
   return (
-    <div
-      className={`splash${leaving ? ' is-leaving' : ''}`}
-      role="dialog"
-      aria-label="ARGES intro"
-      onClick={dismiss}
-    >
+    <div className={`splash${leaving ? ' is-leaving' : ''}`} role="presentation">
       <video
         ref={videoRef}
         className="splash-video"
@@ -93,9 +94,6 @@ export function Splash() {
         onEnded={dismiss}
         onError={dismiss}
       />
-      <button type="button" className="splash-skip" onClick={dismiss}>
-        Skip intro
-      </button>
     </div>
   );
 }
