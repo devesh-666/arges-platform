@@ -1,0 +1,300 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARGES landing — "the page describes itself"
+   ───────────────────────────────────────────────────────────────────────────
+   ARGES narrates the world to people who cannot see it, so this page narrates
+   itself. That is the whole design, and it drives every decision here:
+
+   · The narration rail is a first-class surface, not an accessibility bolt-on.
+     It is pinned to the bottom of the viewport and reads the same text the
+     speech synthesiser speaks, so the feature works with the sound off.
+   · Two products are explained by scroll-scrubbed assembly footage pinned in
+     the centre of the viewport, the way animejs.com pins its ring. Scroll
+     position drives video time; nothing autoplays.
+   · Everything else gets out of the way: near-black canvas, one accent, one
+     signal colour, hairlines instead of boxes, monospace for anything
+     technical.
+
+   ARGES orange is the single accent. The product's own LED blue is reserved
+   strictly for the narration state — when the page is speaking, it is blue.
+   That is the only thing blue ever means here.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.lp {
+  --canvas: #0a0a0b;
+  --canvas-lift: #131315;
+  --hairline: #26262a;
+  --ink: #ffffff;
+  --body: #9b9aa0;
+  --muted: #66656c;
+
+  --accent: #ff6b1a;
+  --accent-press: #d85512;
+  --speak: #2e7bff;          /* narration state only — never decoration */
+
+  --s1: 8px;  --s2: 16px; --s3: 24px; --s4: 32px;
+  --s5: 48px; --s6: 64px; --s7: 96px; --s8: 128px;
+
+  --display: 'Syne', 'Bricolage Grotesque', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --text: 'Hanken Grotesk', system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--text);
+  overflow-x: clip;
+}
+
+/* arges.css ships an unlayered `section{padding:160px 5vw}` — neutralise it. */
+.lp section { padding: 0; position: relative; }
+.lp ::selection { background: var(--accent); color: #fff; }
+
+.lp .lp-shell { max-width: 1240px; margin: 0 auto; padding-inline: var(--s4); }
+.lp .lp-band { padding-block: var(--s7); }
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+.lp h1, .lp h2, .lp h3 { font-family: var(--display); font-weight: 500; margin: 0; }
+.lp .lp-d1 { font-size: clamp(2.6rem, 7vw, 5.25rem); line-height: 1.02; letter-spacing: -0.035em; }
+.lp .lp-d2 { font-size: clamp(1.9rem, 4.2vw, 3.25rem); line-height: 1.08; letter-spacing: -0.03em; }
+.lp .lp-d3 { font-size: clamp(1.1rem, 1.6vw, 1.3rem); line-height: 1.25; letter-spacing: -0.015em; font-weight: 600; }
+.lp .lp-lede { font-size: clamp(1rem, 1.2vw, 1.1rem); line-height: 1.62; color: var(--body); max-width: 60ch; margin: 0; }
+.lp .lp-small { font-size: 0.875rem; line-height: 1.55; color: var(--body); margin: 0; }
+
+.lp .lp-eyebrow {
+  font-family: var(--mono); font-size: 0.6875rem; font-weight: 500;
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--accent);
+  display: flex; align-items: center; gap: var(--s2); margin: 0 0 var(--s3);
+}
+.lp .lp-eyebrow::before { content: ''; width: 26px; height: 1px; background: currentColor; flex: none; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.lp .lp-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s1);
+  height: 48px; padding-inline: var(--s4); border-radius: 0;
+  font-family: var(--text); font-size: 0.875rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+  transition: background-color .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+}
+.lp .lp-btn-primary { background: var(--accent); color: #fff; }
+.lp .lp-btn-primary:hover { background: var(--accent-press); }
+.lp .lp-btn-ghost { background: transparent; color: var(--ink); border-color: rgba(255,255,255,.34); }
+.lp .lp-btn-ghost:hover { border-color: var(--ink); }
+.lp .lp-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+.lp .lp-nav {
+  position: fixed; inset: 0 0 auto; height: 64px; z-index: 80;
+  display: flex; align-items: center; padding-inline: var(--s4);
+  background: color-mix(in srgb, var(--canvas) 84%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent; transition: border-color .3s;
+}
+.lp .lp-nav.lp-stuck { border-bottom-color: var(--hairline); }
+.lp .lp-nav-in { width: 100%; max-width: 1240px; margin: 0 auto; display: flex; align-items: center; gap: var(--s3); }
+.lp .lp-brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
+.lp .lp-brand em { font-style: normal; color: var(--accent); }
+.lp .lp-nav-right { margin-left: auto; display: flex; align-items: center; gap: var(--s2); }
+
+/* The narration toggle is the signature control of this page, so it reads as
+   a switch rather than a button, and turns the narration blue when live. */
+.lp .lp-speak-toggle {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 40px; padding: 0 16px;
+  background: transparent; border: 1px solid var(--hairline); color: var(--body);
+  font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.16em;
+  text-transform: uppercase; cursor: pointer;
+  transition: color .25s, border-color .25s;
+}
+.lp .lp-speak-toggle:hover { color: var(--ink); border-color: rgba(255,255,255,.4); }
+.lp .lp-speak-toggle[aria-pressed="true"] { color: var(--speak); border-color: var(--speak); }
+.lp .lp-speak-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted); flex: none; transition: background .25s, box-shadow .25s;
+}
+.lp .lp-speak-toggle[aria-pressed="true"] .lp-speak-dot {
+  background: var(--speak); box-shadow: 0 0 0 0 rgba(46,123,255,.7);
+  animation: lp-pulse 1.8s ease-out infinite;
+}
+@keyframes lp-pulse {
+  70% { box-shadow: 0 0 0 8px rgba(46,123,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(46,123,255,0); }
+}
+.lp .lp-speak-toggle:focus-visible { outline: 2px solid var(--speak); outline-offset: 2px; }
+
+/* ── Narration rail ──────────────────────────────────────────────────────── */
+.lp .lp-rail {
+  position: fixed; inset: auto 0 0 0; z-index: 70;
+  background: color-mix(in srgb, #050506 92%, transparent);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--speak);
+  transform: translateY(100%); transition: transform .45s var(--ease);
+}
+.lp .lp-rail.lp-open { transform: none; }
+/* the rail is fixed over the page, so give the document room when it is out */
+.lp.lp-railed { padding-bottom: 104px; }
+.lp .lp-rail-in {
+  max-width: 1240px; margin: 0 auto; padding: var(--s3) var(--s4);
+  display: flex; gap: var(--s3); align-items: flex-start;
+}
+.lp .lp-rail-tag {
+  font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--speak); flex: none; padding-top: 3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lp .lp-rail-tag::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--speak); box-shadow: 0 0 8px var(--speak);
+}
+.lp .lp-rail-text { font-size: 0.9375rem; line-height: 1.55; color: #e8e7ea; margin: 0; }
+.lp .lp-rail-close {
+  margin-left: auto; flex: none; background: transparent; border: 0;
+  color: var(--muted); font-family: var(--mono); font-size: 0.625rem;
+  letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; padding: 4px;
+}
+.lp .lp-rail-close:hover { color: var(--ink); }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.lp .lp-hero {
+  position: relative; min-height: 100svh; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: calc(64px + var(--s4)) var(--s4) var(--s6);
+}
+.lp .lp-hero-media { position: absolute; inset: 0; z-index: 0; }
+.lp .lp-hero-media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp .lp-hero-scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(10,10,11,.94) 0%, rgba(10,10,11,.72) 36%, rgba(10,10,11,.2) 62%, transparent 82%),
+    linear-gradient(180deg, rgba(10,10,11,.8) 0%, rgba(10,10,11,.1) 32%, rgba(10,10,11,.72) 76%, var(--canvas) 100%);
+}
+.lp .lp-hero-in { position: relative; z-index: 2; width: 100%; max-width: 1240px; margin: 0 auto; }
+.lp .lp-hero-title { max-width: 18ch; }
+.lp .lp-word { display: inline-block; white-space: nowrap; }
+.lp .lp-word + .lp-word { margin-left: 0.26em; }
+.lp .lp-char { display: inline-block; will-change: transform, opacity; }
+.lp .lp-hero-title .lp-accent { color: var(--accent); }
+.lp .lp-hero-lede { margin-top: var(--s3); max-width: 44ch; }
+.lp .lp-hero-cta { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
+
+/* The invitation to turn narration on — the page's one piece of self-reference */
+.lp .lp-hero-invite {
+  margin-top: var(--s5); padding-top: var(--s3);
+  border-top: 1px solid var(--hairline);
+  font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.lp .lp-hero-invite b { color: var(--speak); font-weight: 500; }
+
+/* ── Scroll-scrub blocks ─────────────────────────────────────────────────── */
+.lp .lp-scrub { position: relative; }
+.lp .lp-scrub-sticky {
+  position: sticky; top: 0; height: 100svh;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.lp .lp-scrub-sticky video {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  /* the footage is already on black; contain keeps every part in frame */
+}
+.lp .lp-scrub-head {
+  position: absolute; inset: auto auto var(--s6) 0; z-index: 2;
+  width: 100%; pointer-events: none;
+}
+.lp .lp-scrub-head .lp-shell { pointer-events: auto; }
+.lp .lp-scrub-progress {
+  position: absolute; inset: auto 0 0 0; z-index: 3;
+  height: 2px; background: var(--hairline);
+}
+.lp .lp-scrub-progress i { display: block; height: 100%; width: 0; background: var(--accent); }
+.lp .lp-scrub-count {
+  position: absolute; top: calc(64px + var(--s3)); right: var(--s4); z-index: 3; margin: 0;
+  font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.lp .lp-scrub-count b { color: var(--ink); font-weight: 500; font-size: 1.5rem; letter-spacing: -0.02em; }
+
+/* ── Capability list — hairlines, not cards ──────────────────────────────── */
+.lp .lp-caps { border-top: 1px solid var(--hairline); }
+.lp .lp-cap {
+  display: grid; grid-template-columns: 72px 1fr 1.1fr; gap: var(--s4);
+  padding: var(--s4) 0; border-bottom: 1px solid var(--hairline);
+  align-items: start;
+}
+.lp .lp-cap-no { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.2em; color: var(--accent); padding-top: 5px; }
+.lp .lp-cap h3 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.015em; }
+
+/* ── Stories ─────────────────────────────────────────────────────────────── */
+.lp .lp-stories { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s2); }
+.lp .lp-story { position: relative; overflow: hidden; border: 1px solid var(--hairline); aspect-ratio: 16/9; }
+.lp .lp-story video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp .lp-story-body {
+  position: absolute; inset: auto 0 0 0; padding: var(--s4);
+  background: linear-gradient(180deg, transparent, rgba(5,5,6,.94) 62%);
+}
+.lp .lp-story-body h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 3px; }
+.lp .lp-story-tag {
+  position: absolute; top: var(--s3); left: var(--s3); z-index: 2;
+  font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink);
+  background: rgba(5,5,6,.68); backdrop-filter: blur(6px);
+  padding: 5px 10px; border-radius: 999px;
+}
+
+/* ── Roles ───────────────────────────────────────────────────────────────── */
+.lp .lp-roles { border-top: 1px solid var(--hairline); }
+.lp .lp-role {
+  display: grid; grid-template-columns: 72px 1fr auto; gap: var(--s4);
+  align-items: center; padding: var(--s4) 0; border-bottom: 1px solid var(--hairline);
+}
+.lp .lp-role-no { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.2em; color: var(--muted); }
+.lp .lp-role h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 2px; }
+.lp .lp-role-go { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+
+/* ── Spec strip ──────────────────────────────────────────────────────────── */
+.lp .lp-specs { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--hairline); margin: 0; }
+.lp .lp-spec { padding: var(--s4) var(--s3) var(--s4) 0; border-bottom: 1px solid var(--hairline); }
+.lp .lp-spec dt { font-family: var(--mono); font-size: 0.625rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: var(--s1); }
+.lp .lp-spec dd { margin: 0; font-family: var(--display); font-size: clamp(1.7rem, 3.2vw, 2.6rem); font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+.lp .lp-spec dd small { font-size: 0.9rem; font-weight: 500; color: var(--body); margin-left: 4px; letter-spacing: 0; }
+
+/* ── Close + footer ──────────────────────────────────────────────────────── */
+.lp .lp-close { text-align: center; border-top: 1px solid var(--hairline); }
+.lp .lp-close .lp-lede { margin-inline: auto; margin-top: var(--s3); }
+.lp .lp-close-cta { display: flex; gap: var(--s2); justify-content: center; margin-top: var(--s4); flex-wrap: wrap; }
+.lp .lp-foot { border-top: 1px solid var(--hairline); background: #050506; padding-block: var(--s5); }
+.lp .lp-foot-in { display: flex; flex-wrap: wrap; gap: var(--s3); justify-content: space-between; align-items: center; }
+.lp .lp-foot p { font-size: 0.8125rem; color: var(--muted); margin: 0; }
+
+/* ── Reveal rest states (anime.js writes the end state) ──────────────────── */
+.lp .lp-rv { opacity: 0; transform: translateY(22px); will-change: transform, opacity; }
+/* .lp-hero-fade is an animation hook with no styling of its own, but it still
+   needs a rest state or the hero flashes in before the timeline starts. */
+.lp .lp-hero-fade { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp .lp-hero-fade { opacity: 1; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .lp .lp-specs { grid-template-columns: repeat(2, 1fr); }
+  .lp .lp-cap { grid-template-columns: 48px 1fr; }
+  .lp .lp-cap .lp-small { grid-column: 2; }
+}
+@media (max-width: 720px) {
+  .lp .lp-band { padding-block: var(--s6); }
+  .lp .lp-stories { grid-template-columns: 1fr; }
+  .lp .lp-role { grid-template-columns: 1fr auto; }
+  .lp .lp-role-no { display: none; }
+  .lp .lp-rail-in { flex-direction: column; gap: var(--s2); padding: var(--s3); }
+  .lp .lp-rail-close { margin-left: 0; }
+  .lp .lp-scrub-count { display: none; }
+  .lp .lp-hero { min-height: 92svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp .lp-rv { opacity: 1; transform: none; }
+  .lp .lp-speak-toggle[aria-pressed="true"] .lp-speak-dot { animation: none; }
+  .lp .lp-rail { transition: none; }
+}

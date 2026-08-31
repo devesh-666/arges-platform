@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Cursor } from './components/Cursor';
 import { Splash } from './components/Splash';
-import { LandingV2 } from './pages/LandingV2';
+import { Landing } from './pages/Landing';
 
 // Lazy load all pages except the landing page (first paint)
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
@@ -29,7 +29,7 @@ export default function App() {
       <Cursor />
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<LandingV2 />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/family" element={<FamilyDashboard />} />
