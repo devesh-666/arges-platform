@@ -4,8 +4,9 @@ import { animate, stagger, createScope, utils, type Scope } from 'animejs';
 import '../styles/landing-v2.css';
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Content is taken from the product sheets in assets/ — every number here
-   appears on arges-full-product-sheet.jpeg or arges-band-exploded-sheet.jpeg.
+   The page carries no static imagery — every visual is footage out of
+   public/media/, watermark-stripped. The numbers below are still sourced from
+   the product sheets in assets/, they are just no longer displayed as sheets.
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* Split by word, not by line — each word is a nowrap box so the per-character
@@ -46,6 +47,14 @@ const STORIES = [
   { id: 'signal', tag: 'Scene 02', title: 'Signal', body: 'A crossing read in real time — traffic, kerb, and the moment it is safe to go.' },
   { id: 'network', tag: 'Scene 03', title: 'Network', body: 'One tap opens the Echo Network and a volunteer is already looking.' },
   { id: 'contact', tag: 'Scene 04', title: 'Contact', body: 'Family checks in, sees what is needed, and steps back out again.' },
+];
+
+/** The three macro part films shown under the anatomy plate. */
+const PARTS = [
+  { id: 'part-camera', no: '02', name: '8MP camera module', alt: 'Macro shot of the ARGES camera module and lens barrel' },
+  { id: 'part-core', no: '07', name: 'Core module (AI PCB)', alt: 'Macro shot of the ARGES core PCB and AI accelerator' },
+  // this clip travels across three subjects, so the label names all of them
+  { id: 'part-audio', no: '—', name: 'Battery, driver, board', alt: 'Macro shot travelling across the ARGES battery cell, bone conduction driver and main board' },
 ];
 
 const GLASSES_SPECS = [
@@ -186,7 +195,6 @@ export function LandingV2() {
       <header className="lv-nav">
         <div className="lv-nav-inner">
           <Link to="/" className="lv-brand">
-            <img src="/logo-mark.png" alt="" aria-hidden="true" />
             ARGES <em>VISION</em>
           </Link>
           <nav className="lv-nav-links" aria-label="Primary">
@@ -204,9 +212,10 @@ export function LandingV2() {
         {/* ── Hero: Ferrari full-bleed cinema ───────────────────────────── */}
         <section className="lv-hero">
           <div className="lv-hero-media">
-            <img
-              src="/media/arges-glasses-hero-render.jpeg"
-              alt="ARGES Vision smart glasses, three-quarter view, amber lenses lit by blue status LEDs"
+            <video
+              src="/media/hero-glasses.mp4"
+              autoPlay muted loop playsInline preload="auto"
+              aria-label="ARGES Vision smart glasses rotating inside a heads-up display ring"
             />
           </div>
           <div className="lv-hero-scrim" />
@@ -293,15 +302,31 @@ export function LandingV2() {
             </div>
 
             <div className="lv-plate lv-reveal">
-              <img
-                src="/media/arges-full-product-sheet.jpeg"
-                alt="Exploded view of ARGES Vision glasses labelling all fourteen components, with a 360-degree view row and dimensions"
-                loading="lazy"
+              <video
+                src="/media/product-macro.mp4"
+                autoPlay muted loop playsInline preload="none"
+                aria-label="Macro shot travelling along the temple arm of the ARGES glasses"
               />
               <div className="lv-plate-cap">
-                <span>Exploded view · 14 components</span>
+                <span>Temple arm · TR90 on stainless hinges</span>
                 <span>160 × 55 × 145 mm</span>
               </div>
+            </div>
+
+            <div className="lv-parts lv-reveal">
+              {PARTS.map((part) => (
+                <figure className="lv-part" key={part.id} style={{ margin: 0 }}>
+                  <video
+                    src={`/media/${part.id}.mp4`}
+                    autoPlay muted loop playsInline preload="none"
+                    aria-label={part.alt}
+                  />
+                  <figcaption>
+                    <span className="lv-part-no">{part.no}</span>
+                    <span>{part.name}</span>
+                  </figcaption>
+                </figure>
+              ))}
             </div>
 
             <dl className="lv-specs lv-reveal">
@@ -354,13 +379,13 @@ export function LandingV2() {
             </div>
 
             <div className="lv-plate lv-reveal">
-              <img
-                src="/media/arges-band-exploded-sheet.jpeg"
-                alt="Exploded view of the ARGES haptic band showing its ten components, 360-degree views and dimensions"
-                loading="lazy"
+              <video
+                src="/media/band-hand.mp4"
+                autoPlay muted loop playsInline preload="none"
+                aria-label="A hand resting on the ARGES haptic band as it lights and pulses"
               />
               <div className="lv-plate-cap">
-                <span>Exploded view · 10 components</span>
+                <span>Linear resonant actuator · 10 components</span>
                 <span>45 × 25 × 12 mm</span>
               </div>
             </div>
@@ -385,18 +410,6 @@ export function LandingV2() {
             <div className="lv-head">
               <p className="lv-eyebrow lv-reveal">In the box</p>
               <h2 className="lv-display-xl lv-reveal">Everything, ready to wear.</h2>
-            </div>
-
-            <div className="lv-plate lv-reveal">
-              <img
-                src="/media/arges-glasses-design-sheet.jpeg"
-                alt="ARGES Vision package contents: glasses, magnetic case, haptic band, cable, cloth and printed guides, with angle-by-angle views"
-                loading="lazy"
-              />
-              <div className="lv-plate-cap">
-                <span>Package contents</span>
-                <span>Angle-by-angle · 11 views</span>
-              </div>
             </div>
 
             <ul className="lv-boxlist lv-reveal" style={{ listStyle: 'none', padding: 0 }}>
@@ -437,6 +450,12 @@ export function LandingV2() {
 
         {/* ── Closing ───────────────────────────────────────────────────── */}
         <section className="lv-cta-band lv-band-deep" data-observe>
+          <video
+            className="lv-cta-bg"
+            src="/media/forge.mp4"
+            autoPlay muted loop playsInline preload="none"
+            aria-hidden="true"
+          />
           <div className="lv-shell">
             <h2 className="lv-display-xl lv-reveal">Forging light. Empowering sight.</h2>
             <p className="lv-lede lv-reveal">

@@ -188,9 +188,10 @@
   overflow: hidden;
 }
 .lv2 .lv-hero-media { position: absolute; inset: 0; z-index: 0; }
-.lv2 .lv-hero-media img {
+.lv2 .lv-hero-media video {
   width: 100%; height: 100%;
-  object-fit: cover; object-position: 58% 46%;
+  object-fit: cover; object-position: center;
+  display: block;
 }
 /* Photography IS the depth (Ferrari) — the scrim only buys type legibility. */
 .lv2 .lv-hero-scrim {
@@ -304,7 +305,7 @@
   overflow: hidden;
   border-radius: var(--r-none);      /* Ferrari sharp */
 }
-.lv2 .lv-plate img { display: block; width: 100%; height: auto; }
+.lv2 .lv-plate video { display: block; width: 100%; height: auto; }
 .lv2 .lv-plate-cap {
   display: flex; justify-content: space-between; gap: var(--s-sm);
   padding: var(--s-sm) var(--s-md);
@@ -436,4 +437,44 @@
 @media (prefers-reduced-motion: reduce) {
   .lv2 .lv-ticker-row { animation: none; }
   .lv2 .lv-reveal { opacity: 1; transform: none; }
+}
+
+
+/* ── Anatomy part triptych — three macro films under the main plate ───────── */
+.lv2 .lv-parts {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-xs); margin-top: var(--s-xs);
+}
+.lv2 .lv-part {
+  border: 1px solid var(--lv-hairline);
+  background: var(--lv-canvas-deep);
+  overflow: hidden;
+}
+.lv2 .lv-part video {
+  display: block; width: 100%; aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.lv2 .lv-part figcaption {
+  display: flex; align-items: baseline; gap: var(--s-xs);
+  padding: var(--s-sm) var(--s-md);
+  border-top: 1px solid var(--lv-hairline);
+  font-family: var(--lv-mono); font-size: 0.6875rem;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--lv-body);
+}
+.lv2 .lv-part-no { color: var(--lv-accent); }
+
+/* ── Closing band: forge footage behind the closing line ──────────────────── */
+.lv2 .lv-cta-band { overflow: hidden; }
+.lv2 .lv-cta-bg {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.28;
+  /* keep the type the brightest thing in the band */
+  mask-image: radial-gradient(120% 100% at 50% 50%, #000 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 50%, #000 20%, transparent 78%);
+}
+.lv2 .lv-cta-band .lv-shell { position: relative; z-index: 1; }
+
+@media (max-width: 720px) {
+  .lv2 .lv-parts { grid-template-columns: 1fr; }
 }
