@@ -1,49 +1,55 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** Cut the intro here — the phoenix is fully formed and lit by ~4s, then just holds. */
+/** Cut the intro here — the phoenix is fully formed and lit by ~4s, then holds. */
 const CUT_AT_MS = 5000;
 const FADE_MS = 700;
+
+/** Set to false to replay the intro on every page load (useful when demoing). */
+const ONCE_PER_SESSION = true;
 const SESSION_KEY = 'arges-splash';
 
 /**
  * Fullscreen video splash built on `public/media/logo-intro.mp4` — the phoenix
  * logo forming out of a binary field. The published asset has already had the
  * Gemini sparkle watermark erased (ffmpeg `delogo` over the 72x72 mark at
- * 1704,864); the `.splash-video` overscan below is belt-and-braces so the frame
- * edge never shows on odd aspect ratios.
+ * 1704,864), so the video needs no cropping to hide it.
  *
- * Plays once per browser session, auto-cuts at CUT_AT_MS, and is skippable by
- * click, Escape, or the focusable Skip control. Reduced-motion and load
- * failures bypass it entirely rather than trapping anyone behind a video.
+ * Skippable by click, Escape/Enter/Space, or the focusable Skip control.
+ * Reduced-motion bypasses it entirely. A blocked autoplay does NOT bypass it —
+ * the cut timer still runs, so a browser that refuses to start the video shows
+ * a brief black hold rather than a splash that flickers out instantly.
  */
 export function Splash() {
   const [show, setShow] = useState(() => {
     if (typeof window === 'undefined') return false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    if (!ONCE_PER_SESSION) return true;
     try {
-      if (sessionStorage.getItem(SESSION_KEY)) return false;
+      return !sessionStorage.getItem(SESSION_KEY);
     } catch {
-      /* private mode — just play it */
+      return true; // private mode — just play it
     }
-    return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
   const [leaving, setLeaving] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const dismissed = useRef(false);
   const timers = useRef<number[]>([]);
 
   const dismiss = useCallback(() => {
-    setLeaving((already) => {
-      if (already) return already;
-      timers.current.push(window.setTimeout(() => setShow(false), FADE_MS));
-      return true;
-    });
+    if (dismissed.current) return;
+    dismissed.current = true;
+    setLeaving(true);
+    timers.current.push(window.setTimeout(() => setShow(false), FADE_MS));
   }, []);
 
   useEffect(() => {
     if (!show) return;
-    try {
-      sessionStorage.setItem(SESSION_KEY, '1');
-    } catch {
-      /* ignore */
+    if (ONCE_PER_SESSION) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, '1');
+      } catch {
+        /* ignore */
+      }
     }
 
     document.body.style.overflow = 'hidden';
@@ -54,8 +60,9 @@ export function Splash() {
     };
     window.addEventListener('keydown', onKey);
 
-    // Some browsers reject muted autoplay in low-power mode — don't strand the user.
-    videoRef.current?.play().catch(() => dismiss());
+    // If the browser refuses muted autoplay, let the cut timer end the splash
+    // rather than tearing it down the instant the promise rejects.
+    videoRef.current?.play().catch(() => {});
 
     const captured = timers.current;
     return () => {

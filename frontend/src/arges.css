@@ -964,8 +964,11 @@ button.toggle:focus-visible { outline-offset: 4px; }
 .splash-video{
   position:absolute;inset:0;
   width:100%;height:100%;
-  object-fit:cover;object-position:center;
-  transform:scale(1.06);
+  /* `contain`, not `cover`. The clip is 16:9; on a portrait phone `cover` shows
+     only ~26% of the frame width and slices the phoenix in half. The clip's own
+     background is pure black and so is .splash, so the letterbox is invisible
+     and the whole logo is always in frame. */
+  object-fit:contain;object-position:center;
   /* lift the phoenix off the near-black plate without washing the background */
   filter:saturate(1.05) contrast(1.04);
 }
@@ -980,6 +983,13 @@ button.toggle:focus-visible { outline-offset: 4px; }
 }
 .splash-skip:hover,.splash-skip:focus-visible{color:#fff;border-color:#FF6B1A}
 .splash.is-leaving{opacity:0;transition:opacity 0.7s cubic-bezier(0.16,1,0.3,1)}
+
+/* On a portrait screen `contain` leaves the phoenix small, because the 16:9 clip
+   is mostly empty black either side of it. Scaling the contained video up gives
+   the mark real presence and only crops that empty margin. */
+@media (max-aspect-ratio:3/4){
+  .splash-video{transform:scale(1.55)}
+}
 
 @media (max-width:640px){
   .splash-skip{right:16px;bottom:20px;padding:9px 15px}
