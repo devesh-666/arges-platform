@@ -1,0 +1,324 @@
+/* ============================================================
+   AURORA — the landing page surface
+   Dark ground · drifting light · clay · liquid glass
+
+   Everything here is scoped under `.aurora` so it cannot leak into
+   /3d or the dashboards, which stay on Obsidian. Two systems live in
+   this app on purpose: the marketing page is a spectacle, the product
+   surfaces are instruments.
+
+   THE ONE RULE THAT MAKES THIS WORK:
+   Video is never displayed as a rectangle. It is refracted through a
+   lens, poured into letterforms, masked into a blob, or used as the
+   light source behind a surface. A visible <video> box would collapse
+   the whole illusion into a web page with a video on it.
+   ============================================================ */
+
+.aurora {
+  /* Ground */
+  --au-ground: #06060B;
+  --au-ground-2: #0A0A12;
+  --au-surface: #101018;
+  --au-surface-hi: #16161F;
+
+  /* Aurora light */
+  --au-violet: #7C3AED;
+  --au-amber: #FF6B1A;
+  --au-teal: #14B8A6;
+  --au-rose: #F43F5E;
+
+  /* Ink */
+  --au-ink: #FFFFFF;
+  --au-body: #C9C9D4;
+  --au-mute: #7E7E90;
+  --au-faint: #4A4A58;
+
+  /* Glass */
+  --au-glass: rgba(255, 255, 255, 0.055);
+  --au-glass-hi: rgba(255, 255, 255, 0.10);
+  --au-glass-edge: rgba(255, 255, 255, 0.16);
+  --au-glass-spec: rgba(255, 255, 255, 0.55);
+
+  /* Motion */
+  --au-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --au-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  position: relative;
+  background: var(--au-ground);
+  color: var(--au-ink);
+  overflow-x: hidden;
+  isolation: isolate;
+}
+
+/* ── The aurora field ─────────────────────────────────────── */
+/* Enormous blurred colour bodies drifting behind everything. Blur is
+   what separates "aurora" from "three coloured circles" — under about
+   90px they read as shapes rather than light. */
+
+.au-field {
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(110px) saturate(140%);
+  opacity: 0.5;
+}
+
+.au-blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.au-blob-1 { width: 46vw; height: 46vw; background: var(--au-violet); top: -6%;  left: 4%;  animation: au-drift-1 34s ease-in-out infinite; }
+.au-blob-2 { width: 40vw; height: 40vw; background: var(--au-amber);  top: 22%;  right: 2%; animation: au-drift-2 42s ease-in-out infinite; }
+.au-blob-3 { width: 34vw; height: 34vw; background: var(--au-teal);   bottom: 4%; left: 26%; animation: au-drift-3 38s ease-in-out infinite; }
+
+@keyframes au-drift-1 {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); }
+  33%      { transform: translate3d(14vw, 8vh, 0) scale(1.18); }
+  66%      { transform: translate3d(-6vw, 16vh, 0) scale(0.92); }
+}
+@keyframes au-drift-2 {
+  0%, 100% { transform: translate3d(0,0,0) scale(1.1); }
+  40%      { transform: translate3d(-16vw, 12vh, 0) scale(0.9); }
+  75%      { transform: translate3d(-4vw, -8vh, 0) scale(1.22); }
+}
+@keyframes au-drift-3 {
+  0%, 100% { transform: translate3d(0,0,0) scale(0.95); }
+  50%      { transform: translate3d(12vw, -14vh, 0) scale(1.25); }
+}
+
+/* Grain over the whole page — stops the huge gradients from banding,
+   which is the single biggest tell of a cheap dark gradient design. */
+.aurora::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.19;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+.au-content { position: relative; z-index: 1; }
+
+/* ── Type ─────────────────────────────────────────────────── */
+
+.au-display {
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  font-size: clamp(3rem, 9vw, 8rem);
+}
+.au-h2 {
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-size: clamp(2rem, 5vw, 4rem);
+}
+.au-h3 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  line-height: 1.2;
+}
+.au-lead { font-size: clamp(1rem, 1.4vw, 1.2rem); line-height: 1.65; color: var(--au-body); }
+.au-body { color: var(--au-body); line-height: 1.65; }
+.au-mute { color: var(--au-mute); }
+
+.au-eyebrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--au-mute);
+  display: inline-block;
+}
+
+/* Gradient type — used sparingly, on one word per section at most. */
+.au-grad {
+  background: linear-gradient(100deg, var(--au-amber), var(--au-rose) 45%, var(--au-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Clay ─────────────────────────────────────────────────── */
+/* Dark claymorphism. The trick on a dark ground is that the "light"
+   inner edge must be very subtle (3-6% white) — any stronger and it
+   reads as a grey border rather than a lit edge. */
+
+.au-clay {
+  position: relative;
+  border-radius: 34px;
+  background: linear-gradient(150deg, var(--au-surface-hi), var(--au-ground-2));
+  box-shadow:
+    18px 18px 44px rgba(0, 0, 0, 0.62),
+    -10px -10px 34px rgba(255, 255, 255, 0.022),
+    inset 1.5px 1.5px 2px rgba(255, 255, 255, 0.055),
+    inset -1.5px -1.5px 2px rgba(0, 0, 0, 0.55);
+  transition: box-shadow 600ms var(--au-ease), transform 600ms var(--au-ease);
+  will-change: transform;
+}
+
+.au-clay-pressed {
+  box-shadow:
+    inset 10px 10px 26px rgba(0, 0, 0, 0.6),
+    inset -8px -8px 22px rgba(255, 255, 255, 0.028);
+}
+
+/* ── Glass ────────────────────────────────────────────────── */
+
+.au-glass {
+  position: relative;
+  border-radius: 28px;
+  background: var(--au-glass);
+  backdrop-filter: blur(26px) saturate(190%);
+  -webkit-backdrop-filter: blur(26px) saturate(190%);
+  border: 1px solid var(--au-glass-edge);
+  overflow: hidden;
+}
+
+/* The specular sweep along the top edge. This one highlight does more
+   for "this is glass" than the blur does. */
+.au-glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 6%; right: 6%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--au-glass-spec), transparent);
+  pointer-events: none;
+}
+
+/* A soft sheen across the upper half. */
+.au-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 45% 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), transparent);
+  pointer-events: none;
+}
+
+/* ── Liquid blob masking ──────────────────────────────────── */
+/* Footage is clipped to a slowly morphing organic shape so it never
+   presents a straight edge. */
+
+.au-blobmask {
+  overflow: hidden;
+  border-radius: 58% 42% 51% 49% / 47% 55% 45% 53%;
+  animation: au-morph 22s ease-in-out infinite;
+  will-change: border-radius;
+}
+
+@keyframes au-morph {
+  0%, 100% { border-radius: 58% 42% 51% 49% / 47% 55% 45% 53%; }
+  25%      { border-radius: 45% 55% 62% 38% / 58% 42% 58% 42%; }
+  50%      { border-radius: 62% 38% 42% 58% / 40% 60% 40% 60%; }
+  75%      { border-radius: 40% 60% 55% 45% / 55% 40% 60% 45%; }
+}
+
+/* ── Lens ─────────────────────────────────────────────────── */
+/* The hero device. Inside sits a magnified copy of the same footage
+   running behind it, which is what sells refraction — a blur alone
+   just looks like frosted plastic. */
+
+.au-lens {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 40px 120px rgba(124, 58, 237, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 2px 30px rgba(255, 255, 255, 0.10),
+    inset 0 -30px 60px rgba(0, 0, 0, 0.55);
+  will-change: transform;
+}
+
+/* Chromatic fringe at the rim — light splitting through a thick edge. */
+.au-lens::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.30), transparent 42%),
+    radial-gradient(circle at 76% 82%, rgba(255,107,26,0.20), transparent 46%);
+  box-shadow:
+    inset 2px 0 12px rgba(20, 184, 166, 0.22),
+    inset -2px 0 12px rgba(244, 63, 94, 0.22);
+}
+
+/* ── Pills and buttons ────────────────────────────────────── */
+
+.au-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 30px;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 260ms var(--au-spring), box-shadow 400ms var(--au-ease), filter 300ms var(--au-ease);
+  will-change: transform;
+}
+
+.au-btn-primary {
+  color: #170800;
+  background: linear-gradient(135deg, #FFB067, var(--au-amber) 55%, #E4560B);
+  box-shadow: 0 14px 38px rgba(255, 107, 26, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+.au-btn-primary:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.07); }
+
+.au-btn-glass {
+  color: var(--au-ink);
+  background: var(--au-glass);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid var(--au-glass-edge);
+}
+.au-btn-glass:hover { transform: translateY(-3px); background: var(--au-glass-hi); }
+
+.au-btn:active { transform: translateY(0) scale(0.985); }
+
+/* ── Layout ───────────────────────────────────────────────── */
+
+.au-shell { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 26px; }
+.au-band { padding: clamp(90px, 13vh, 170px) 0; position: relative; }
+
+/* ── Accessibility ────────────────────────────────────────── */
+
+.aurora :where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--au-amber);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* The aurora drift, blob morphing and every tilt are decorative. Under
+   reduced motion the page becomes a still composition — which it is
+   designed to survive, because every layer is legible at rest. */
+@media (prefers-reduced-motion: reduce) {
+  .au-field, .au-blob, .au-blobmask { animation: none !important; }
+  .aurora *, .aurora *::before, .aurora *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .aurora::after { display: none; }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 780px) {
+  .au-clay { border-radius: 26px; }
+  .au-field { filter: blur(70px) saturate(140%); opacity: 0.42; }
+  .au-band { padding: 72px 0; }
+}

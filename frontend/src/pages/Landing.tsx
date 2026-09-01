@@ -1,376 +1,422 @@
-import { lazy, Suspense, useRef, useState } from 'react';
+import { useState } from 'react';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { SiteNav, SiteFooter } from '../components/SiteChrome';
-import { Reveal, RevealGroup, Rule, SectionHead, CharCascade } from '../components/Primitives';
-import { XRayTeardown } from '../components/XRayTeardown';
-import { AmbientVideo } from '../components/AmbientVideo';
-import { rise, inView, EASE, SCROLL_SPRING } from '../animations/obsidian';
+import { AuroraField, ClayTile, GlassCard, ParallaxLayer, usePointer } from '../components/Aurora';
+import { FilmBlob, FilmGlow, FilmText, LiquidLens } from '../components/FilmSurfaces';
+import { Logo } from '../components/Primitives';
 import { MEDIA } from '../lib/media';
 
-// Three.js only downloads when the hero actually mounts.
-const GlassesViewer3D = lazy(() => import('../components/GlassesViewer3D').then((m) => ({ default: m.GlassesViewer3D })));
+/**
+ * AURORA — the landing page.
+ *
+ * A deliberately different surface from the rest of the app: /3d and the
+ * dashboards stay on Obsidian's restraint, this one is a spectacle. All nine
+ * clips appear here and not one is presented as a video player — each is a
+ * lens, letterform fill, liquid blob or light source. See FilmSurfaces.tsx.
+ */
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 const STATS = [
-  { value: '15M+', label: 'Blind in India' },
-  { value: '₹9,999', label: 'Starting price' },
-  { value: '8', label: 'Industry firsts' },
-  { value: '5', label: 'Layer ecosystem' },
+  { v: '15M+', l: 'Blind in India' },
+  { v: '₹9,999', l: 'Starting price' },
+  { v: '<1.5s', l: 'Voice to answer' },
+  { v: '32+', l: 'Indian languages' },
 ];
 
 const ECOSYSTEM = [
-  { num: '01', title: 'Smart Vision', desc: 'Obstacle detection, scene description, navigation — including overhead hazards the cane misses.' },
-  { num: '02', title: 'Reading Intelligence', desc: 'OCR, currency recognition, product scanning, colour detection. Reads the world aloud.' },
-  { num: '03', title: 'Family Guardian', desc: 'Live encrypted video, audio and GPS streamed to family. Talk back. SOS in one touch.' },
-  { num: '04', title: 'OmniAccess', desc: 'Operate phone, laptop or tablet exactly like a sighted person. True equality.' },
-  { num: '05', title: 'Echo Network', desc: 'Community mesh shares hazards. Volunteer vision connects help in five seconds.' },
+  { n: '01', t: 'Smart Vision', d: 'Obstacle detection, scene description and navigation — including the overhead hazards a cane will never find.', c: 'rgba(124,58,237,0.35)' },
+  { n: '02', t: 'Reading Intelligence', d: 'OCR, currency, product and colour recognition. It reads the world aloud, on the frame, offline.', c: 'rgba(255,107,26,0.35)' },
+  { n: '03', t: 'Family Guardian', d: 'Encrypted video, audio and GPS streamed to family. Talk back. SOS in a single touch.', c: 'rgba(20,184,166,0.35)' },
+  { n: '04', t: 'OmniAccess', d: 'Operate a phone, laptop or tablet exactly as a sighted person would. Equality, not assistance.', c: 'rgba(244,63,94,0.35)' },
+  { n: '05', t: 'Echo Network', d: 'A community mesh sharing hazards, where volunteer vision arrives in five seconds.', c: 'rgba(124,58,237,0.35)' },
 ];
 
-const FEATURES = [
-  { name: 'Family Connect', desc: 'Live encrypted video, audio and GPS from the glasses, streamed to family.' },
-  { name: 'OmniAccess', desc: 'Operate phone, laptop or tablet exactly like a sighted person.' },
-  { name: 'Echo Network', desc: 'Community mesh shares hazards; volunteers help in five seconds.' },
-  { name: 'Spatial Sound', desc: '3D binaural beeps guide direction — just follow the sound.' },
-  { name: 'Companion AI', desc: 'Detects stress and sadness; supports mental wellness.' },
-  { name: 'HapticBand', desc: 'Directional vibration zones encode object and distance.' },
-  { name: 'MediScan', desc: 'Reads labels, checks drug interactions, dosage reminders.' },
-  { name: 'Zero-Knowledge', desc: 'AES-256 end-to-end encryption — even ARGES cannot decrypt your data.' },
+const ZONES = [
+  { src: MEDIA.templeLeft,  t: 'Left temple',  d: '3000mAh cell, 3W driver, amplifier and charge controller.' },
+  { src: MEDIA.templeFront, t: 'Front frame',  d: 'Snap-fit camera, MEMS microphone and the wire channel.' },
+  { src: MEDIA.templeRight, t: 'Right temple', d: 'Pi Zero 2 W, GPS, accelerometer — the brain.' },
 ];
 
 const PRICING = [
-  { tier: 'ARGES One', price: '₹9,999', suffix: '', per: 'one-time · glasses only', feats: ['All standalone AI features', 'Lifetime offline AI', 'OCR · currency · faces', 'Wake-word voice assistant'], featured: false },
-  { tier: 'ARGES Family', price: '₹12,999', suffix: '', per: 'one-time · glasses + band + cloud', feats: ['Everything in ARGES One', 'HapticBand included', '1-year cloud streaming', 'Family Guardian Dashboard', 'Echo Network access'], featured: true },
-  { tier: 'ARGES Care', price: '₹49', suffix: '/mo', per: 'subscription · after year 1', feats: ['Live streaming continuation', 'Echo Network', 'Software updates', 'Companion AI premium'], featured: false },
+  { tier: 'ARGES One', price: '₹9,999', per: 'one-time · glasses only', feats: ['All standalone AI features', 'Lifetime offline AI', 'OCR · currency · faces', 'Wake-word assistant'], hero: false },
+  { tier: 'ARGES Family', price: '₹12,999', per: 'one-time · glasses + band', feats: ['Everything in ARGES One', 'HapticBand included', '1-year cloud streaming', 'Guardian Dashboard', 'Echo Network access'], hero: true },
+  { tier: 'ARGES Care', price: '₹49', per: 'per month · after year one', feats: ['Streaming continuation', 'Echo Network', 'Software updates', 'Companion AI premium'], hero: false },
 ];
 
 const FAQS = [
-  { q: 'Do I need internet for ARGES to work?', a: 'No — core AI (obstacle detection, OCR, currency, face recognition) runs on-device. The cloud is only used for language translation, family streaming, and the Echo Network.' },
-  { q: 'Is the family video stream private?', a: 'Yes — AES-256 end-to-end encryption via LiveKit SFrame. Even ARGES itself cannot decrypt your stream.' },
-  { q: 'How long does the battery last?', a: '8+ hours with the 6000mAh battery. The solar charging strap trickle-charges during outdoor use.' },
-  { q: 'Can the user operate a phone or laptop?', a: 'Yes — ARGES OmniAccess provides sight-equivalent control via spoken and haptic feedback.' },
-  { q: 'Does it work in Indian languages?', a: 'Yes — 32+ Indian languages via Bhashini, including Hindi, Tamil, Telugu, Marathi, Bengali.' },
-  { q: 'What if the user falls?', a: 'The ADXL345 detects the fall (99.4% accuracy) and triggers Guardian SOS — sending live GPS, audio, and video to family.' },
+  { q: 'Does it work without internet?', a: 'Yes. Obstacle detection, OCR, currency and face recognition all run on the frame itself. The cloud is only used for translation, family streaming and the Echo Network.' },
+  { q: 'Is the family stream private?', a: 'AES-256 end-to-end encryption via LiveKit SFrame. The server is zero-knowledge — ARGES cannot decrypt your stream.' },
+  { q: 'How long does the battery last?', a: 'Eight hours and more. The solar charging strap trickle-charges through outdoor use.' },
+  { q: 'What happens if the wearer falls?', a: 'The ADXL345 detects it at 99.4% accuracy and triggers Guardian SOS — live GPS, audio and video to family immediately.' },
+  { q: 'Which languages are supported?', a: 'Over 32 Indian languages through Bhashini, including Hindi, Tamil, Telugu, Marathi and Bengali.' },
 ];
 
-export function Landing() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const heroRef = useRef<HTMLElement>(null);
+const rise = {
+  hidden: { opacity: 0, y: 44 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
+};
 
-  // Parallax on the opening. The render drifts and dissolves slightly faster
-  // than the type it sits behind, so the hero recedes instead of simply
-  // scrolling away. Spring-smoothed — see SCROLL_SPRING on why not an ease.
-  const { scrollYProgress: heroScroll } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-  const hp = useSpring(heroScroll, SCROLL_SPRING);
-  const renderY = useTransform(hp, [0, 1], ['0%', '18%']);
-  const renderScale = useTransform(hp, [0, 1], [1, 1.12]);
-  const renderFade = useTransform(hp, [0, 0.8], [0.75, 0]);
-  const copyY = useTransform(hp, [0, 1], ['0%', '-6%']);
-  const copyFade = useTransform(hp, [0, 0.7], [1, 0]);
+export function Landing() {
+  const { px, py } = usePointer();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const { scrollYProgress } = useScroll();
+  const bar = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
+  const heroFade = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 
   return (
-    <>
+    <div className="aurora">
       <a href="#main" className="skip-link">Skip to content</a>
-      <SiteNav />
+      <AuroraField />
 
-      <main id="main">
-        {/* ── Hero ──────────────────────────────────────────── */}
-        <section ref={heroRef} style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-          {/* The render sits behind the type and carries the page — Bugatti's
-              rule. It is decorative, so it is hidden from assistive tech. */}
-          <motion.div
-            aria-hidden="true"
-            style={{ position: 'absolute', inset: 0, opacity: renderFade, y: renderY, scale: renderScale }}
-          >
-            <Suspense fallback={null}>
-              <GlassesViewer3D />
-            </Suspense>
-          </motion.div>
-          <div
-            aria-hidden="true"
-            style={{ position: 'absolute', inset: 0, background: 'radial-gradient(90% 70% at 50% 50%, transparent 20%, rgba(8,8,12,0.7) 70%, var(--canvas) 100%)' }}
-          />
+      {/* Scroll progress — a thin filament of aurora across the top. */}
+      <motion.div
+        aria-hidden="true"
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: 2, zIndex: 999,
+          transformOrigin: '0% 50%', scaleX: bar,
+          background: 'linear-gradient(90deg, var(--au-violet), var(--au-amber), var(--au-teal))',
+        }}
+      />
 
-          <motion.div className="shell" style={{ position: 'relative', zIndex: 2, paddingTop: 96, paddingBottom: 64, y: copyY, opacity: copyFade }}>
-            <motion.span
-              className="eyebrow"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, ease: EASE }}
-            >
-              / Spatial AI vision ecosystem
-            </motion.span>
+      {/* ── Nav ───────────────────────────────────────────── */}
+      <header style={{ position: 'fixed', top: 18, left: 0, right: 0, zIndex: 900, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
+        <nav
+          className="au-glass"
+          aria-label="Primary"
+          style={{ display: 'flex', alignItems: 'center', gap: 26, padding: '11px 14px 11px 20px', borderRadius: 999, width: '100%', maxWidth: 780 }}
+        >
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 9, color: 'var(--au-ink)', textDecoration: 'none', fontWeight: 500, letterSpacing: '-0.02em' }}>
+            <Logo size={20} color="var(--au-amber)" /> ARGES
+          </Link>
+          <div style={{ display: 'flex', gap: 20, marginLeft: 4 }} className="max-md:hidden">
+            {[['/3d', 'How it works'], ['#inside', 'Inside'], ['#pricing', 'Pricing']].map(([to, label]) => (
+              to.startsWith('#')
+                ? <a key={to} href={to} style={{ color: 'var(--au-mute)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</a>
+                : <Link key={to} to={to} style={{ color: 'var(--au-mute)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</Link>
+            ))}
+          </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link to="/login" style={{ color: 'var(--au-body)', textDecoration: 'none', fontSize: '0.875rem', padding: '0 8px' }}>Sign in</Link>
+            <Link to="/signup" className="au-btn au-btn-primary" style={{ padding: '9px 18px', fontSize: '0.8125rem' }}>Get ARGES</Link>
+          </div>
+        </nav>
+      </header>
 
-            <h1 className="display-xl" style={{ marginTop: 'var(--s5)', maxWidth: '11ch' }}>
-              <CharCascade text="Forging light." />
-              <br />
-              <span style={{ color: 'var(--accent)' }}><CharCascade text="Empowering sight." /></span>
-            </h1>
+      <main id="main" className="au-content">
+        {/* ── Hero — the lens ───────────────────────────────── */}
+        <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', position: 'relative', paddingTop: 120, paddingBottom: 80 }}>
+          <div className="au-shell" style={{ display: 'grid', gap: 56, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', alignItems: 'center' }}>
 
-            <motion.p
-              className="mono"
-              style={{ color: 'var(--mute)', marginTop: 'var(--s5)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.6, ease: EASE }}
-            >
-              Ἄργης · “THE BRIGHT ONE”
-            </motion.p>
+            <motion.div style={{ opacity: heroFade }}>
+              <motion.p className="au-eyebrow" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
+                / Spatial AI vision ecosystem
+              </motion.p>
 
-            <motion.p
-              className="lead body-mute"
-              style={{ marginTop: 'var(--s4)', maxWidth: '54ch' }}
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6, ease: EASE }}
-            >
-              A five-layer AI vision ecosystem that restores independence, safety and
-              dignity to the visually impaired — designed like a spatial computing
-              platform, not a medical device.
-            </motion.p>
+              <motion.h1
+                className="au-display"
+                style={{ marginTop: 22, maxWidth: '11ch' }}
+                initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.1, ease: EASE, delay: 0.1 }}
+              >
+                See <span className="au-grad">without</span> seeing.
+              </motion.h1>
 
-            <motion.div
-              style={{ display: 'flex', gap: 'var(--s3)', marginTop: 'var(--s7)', flexWrap: 'wrap' }}
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.05, duration: 0.6, ease: EASE }}
-            >
-              <Link to="/3d" className="btn btn-accent btn-lg">See how it works</Link>
-              <a href="#ecosystem" className="btn btn-outline btn-lg">Explore the ecosystem</a>
+              <motion.p
+                className="au-lead"
+                style={{ marginTop: 26, maxWidth: '46ch' }}
+                initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: EASE, delay: 0.25 }}
+              >
+                A five-layer vision ecosystem that gives back independence, safety and
+                dignity — engineered as a spatial computing platform, not a medical device.
+              </motion.p>
+
+              <motion.div
+                style={{ display: 'flex', gap: 14, marginTop: 40, flexWrap: 'wrap' }}
+                initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: EASE, delay: 0.38 }}
+              >
+                <Link to="/signup" className="au-btn au-btn-primary">Get ARGES</Link>
+                <Link to="/3d" className="au-btn au-btn-glass">See how it works</Link>
+              </motion.div>
+
+              <motion.dl
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 24, marginTop: 64, maxWidth: 560 }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                transition={{ duration: 1.2, ease: EASE, delay: 0.5 }}
+              >
+                {STATS.map((s) => (
+                  <div key={s.l}>
+                    <dd style={{ fontSize: '1.85rem', fontWeight: 500, letterSpacing: '-0.035em', lineHeight: 1 }}>{s.v}</dd>
+                    <dt className="au-eyebrow" style={{ marginTop: 8, fontSize: '0.5625rem' }}>{s.l}</dt>
+                  </div>
+                ))}
+              </motion.dl>
             </motion.div>
 
-            <motion.dl
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 'var(--s5)', marginTop: 'var(--s9)', maxWidth: 680 }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 1.2, duration: 0.8, ease: EASE }}
-            >
-              {STATS.map((s) => (
-                <div key={s.label}>
-                  <dt className="sr-only">{s.label}</dt>
-                  <dd style={{ fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</dd>
-                  <p className="mono" style={{ color: 'var(--faint)', marginTop: 'var(--s2)' }}>{s.label.toUpperCase()}</p>
-                </div>
-              ))}
-            </motion.dl>
-          </motion.div>
-        </section>
+            {/* The lens. Three layers drifting at different depths. */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 420 }}>
+              <ParallaxLayer px={px} py={py} depth={46} style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 520, height: 520, maxWidth: '92vw', maxHeight: '92vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.30), transparent 62%)', filter: 'blur(46px)' }} />
+              </ParallaxLayer>
 
-        {/* ── Morning (scene 3) ─────────────────────────────── */}
-        {/* Straight after the hero: the product has been named, now show who
-            it is for. Full-bleed and quiet — the claim sits over the footage
-            rather than next to it. */}
-        <section style={{ position: 'relative', minHeight: '78vh', display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }} aria-label="Someone walking, unaided">
-          <AmbientVideo src={MEDIA.morning} />
-          <div className="shell" style={{ position: 'relative', zIndex: 1, paddingBottom: 'var(--s8)' }}>
-            <Reveal><span className="eyebrow">/ Why it exists</span></Reveal>
-            <Reveal delay={0.08}>
-              <p className="display-md" style={{ marginTop: 'var(--s4)', maxWidth: '17ch' }}>
-                Independence, not assistance.
-              </p>
-            </Reveal>
-            <Reveal delay={0.14}>
-              <p className="lead body-mute" style={{ marginTop: 'var(--s4)', maxWidth: '46ch' }}>
-                Fifteen million people in India live without sight. ARGES is built so
-                that the walk to the shop needs nobody's permission.
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        <div className="shell"><Rule /></div>
-
-        {/* ── 01 · Ecosystem ────────────────────────────────── */}
-        <section className="band" id="ecosystem">
-          <div className="shell">
-            <SectionHead
-              eyebrow="/ 01 — The solution"
-              title={<>Not a gadget. <span style={{ color: 'var(--accent)' }}>An ecosystem.</span></>}
-              lead="Five layers, each building on the one below — hardware, AI, family, devices, community."
-            />
-            <RevealGroup>
-              <ul style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 'var(--s3)', marginTop: 'var(--s8)' }}>
-                {ECOSYSTEM.map((l) => (
-                  <motion.li key={l.num} variants={rise} className="card">
-                    <span className="mono" style={{ color: 'var(--accent)' }}>/ {l.num}</span>
-                    <h3 className="display-sm" style={{ marginTop: 'var(--s4)' }}>{l.title}</h3>
-                    <p className="body-mute" style={{ marginTop: 'var(--s3)', fontSize: '0.9375rem' }}>{l.desc}</p>
-                  </motion.li>
-                ))}
-              </ul>
-            </RevealGroup>
-          </div>
-        </section>
-
-        {/* ── 02 · Inside teaser ────────────────────────────── */}
-        <section className="band" style={{ background: 'var(--canvas-soft)', borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)' }}>
-          <div className="shell">
-            <SectionHead
-              eyebrow="/ 02 — Inside"
-              title="Twelve components. One hundred and seventy-four millimetres."
-              lead="A 3000mAh cell and the audio chain in the left temple, capture in the front frame, and a Raspberry Pi Zero 2 W doing the thinking in the right."
-            />
-            {/* The film sits behind the schematic here for the same reason it
-                does on /3d — the diagram alone reads as boxes on a page. Dimmed
-                and blurred so it gives the parts something to sit inside
-                without competing with them. */}
-            <Reveal delay={0.1}>
-              <div style={{ position: 'relative', marginTop: 'var(--s7)' }}>
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute', inset: '-8% -4%',
-                    opacity: 0.3, filter: 'blur(3px)',
-                    maskImage: 'radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%)',
-                    WebkitMaskImage: 'radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 100%)',
-                  }}
+              <ParallaxLayer px={px} py={py} depth={16}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.82 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1.5, ease: EASE, delay: 0.2 }}
                 >
-                  <AmbientVideo src={MEDIA.hero} vignette={false} />
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <XRayTeardown active={null} showAll />
-                </div>
-              </div>
-            </Reveal>
-            {/* Contact (scene 4). The schematic explains the parts; this is
-                what one of them feels like. Inline rather than full-bleed so
-                it reads as evidence attached to the diagram, not a new topic. */}
-            <Reveal delay={0.14}>
-              <figure style={{ marginTop: 'var(--s7)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 'var(--s5)', alignItems: 'center' }}>
-                <AmbientVideo src={MEDIA.contact} variant="inline" />
-                <figcaption>
-                  <span className="eyebrow eyebrow-mute">/ HapticBand</span>
-                  <p className="body-mute" style={{ marginTop: 'var(--s3)', fontSize: '0.9375rem', maxWidth: '38ch' }}>
-                    Directional vibration zones encode object and distance, so a
-                    confirmation arrives through the wrist without a word being spoken
-                    or a sound being blocked.
+                  <motion.div
+                    animate={{ y: [0, -18, 0] }}
+                    transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <LiquidLens src={MEDIA.hero} size={440} />
+                  </motion.div>
+                </motion.div>
+              </ParallaxLayer>
+
+              {/* Floating glass chips orbiting the lens. */}
+              {[
+                { label: 'On-device AI', top: '4%', left: '-4%', d: 30 },
+                { label: 'AES-256 E2EE', bottom: '10%', right: '-6%', d: 38 },
+                { label: 'Fall detection', bottom: '-2%', left: '6%', d: 24 },
+              ].map(({ label, d, ...pos }, i) => (
+                // `label` and `d` are pulled out because the rest is spread
+                // straight into `style` — leaving them in makes them invalid
+                // CSS properties.
+                <ParallaxLayer key={label} px={px} py={py} depth={d} style={{ position: 'absolute', ...pos, zIndex: 3 }}>
+                  <motion.div
+                    className="au-glass"
+                    initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.9, ease: EASE, delay: 0.8 + i * 0.14 }}
+                    style={{ padding: '9px 16px', borderRadius: 999, fontSize: '0.75rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--au-amber)', boxShadow: '0 0 10px var(--au-amber)' }} />
+                    {label}
+                  </motion.div>
+                </ParallaxLayer>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Statement — film poured into the type ─────────── */}
+        <section className="au-band" style={{ paddingTop: 0 }}>
+          <div className="au-shell">
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-15%' }}>
+              <FilmText src={MEDIA.morning} text="INDEPENDENCE" />
+            </motion.div>
+            <motion.p
+              className="au-lead"
+              style={{ margin: '38px auto 0', maxWidth: '54ch', textAlign: 'center' }}
+              variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            >
+              Fifteen million people in India live without sight. ARGES exists so the walk
+              to the shop needs nobody's permission, nobody's arm, and nobody's schedule.
+            </motion.p>
+          </div>
+        </section>
+
+        {/* ── Ecosystem — clay ──────────────────────────────── */}
+        <section className="au-band" id="ecosystem" style={{ position: 'relative' }}>
+          <FilmGlow src={MEDIA.signal} opacity={0.35} blur={90} />
+          <div className="au-shell" style={{ position: 'relative' }}>
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-12%' }} style={{ marginBottom: 62 }}>
+              <p className="au-eyebrow">/ 01 — The solution</p>
+              <h2 className="au-h2" style={{ marginTop: 18, maxWidth: '16ch' }}>
+                Not a gadget. <span className="au-grad">An ecosystem.</span>
+              </h2>
+            </motion.div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 26 }}>
+              {ECOSYSTEM.map((item, i) => (
+                <motion.div
+                  key={item.n}
+                  initial={{ opacity: 0, y: 54 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-8%' }}
+                  transition={{ duration: 0.9, ease: EASE, delay: (i % 3) * 0.1 }}
+                >
+                  <ClayTile glowColor={item.c} style={{ padding: 34, height: '100%' }}>
+                    <span className="au-eyebrow" style={{ color: 'var(--au-amber)' }}>/ {item.n}</span>
+                    <h3 className="au-h3" style={{ marginTop: 18 }}>{item.t}</h3>
+                    <p className="au-body" style={{ marginTop: 12, fontSize: '0.9375rem' }}>{item.d}</p>
+                  </ClayTile>
+                </motion.div>
+              ))}
+
+              {/* The sixth cell is footage rather than a card — breaks the grid
+                  rhythm so it does not read as a stock feature list. */}
+              <motion.div
+                initial={{ opacity: 0, y: 54 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
+                style={{ position: 'relative', minHeight: 260 }}
+              >
+                <FilmBlob src={MEDIA.contact} style={{ position: 'absolute', inset: 0 }} scale={1.25} />
+                <div style={{ position: 'absolute', left: 30, bottom: 30, right: 30 }}>
+                  <span className="au-eyebrow" style={{ color: 'var(--au-amber)' }}>/ 06</span>
+                  <h3 className="au-h3" style={{ marginTop: 12 }}>HapticBand</h3>
+                  <p className="au-body" style={{ marginTop: 8, fontSize: '0.875rem' }}>
+                    Direction and distance, felt at the wrist.
                   </p>
-                </figcaption>
-              </figure>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <div style={{ marginTop: 'var(--s6)' }}>
-                <Link to="/3d" className="btn btn-outline btn-lg">Take the frame apart</Link>
-              </div>
-            </Reveal>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </section>
 
-        {/* ── 03 · Features ─────────────────────────────────── */}
-        <section className="band" id="features">
-          <div className="shell">
-            <SectionHead eyebrow="/ 03 — Capability" title="Eight things it does that nothing else does." />
-            <RevealGroup>
-              <ul style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 1, marginTop: 'var(--s8)', background: 'var(--hairline)', border: '1px solid var(--hairline)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-                {FEATURES.map((f, i) => (
-                  <motion.li key={f.name} variants={rise} style={{ background: 'var(--canvas-card)', padding: 'var(--s5)' }}>
-                    <span className="mono" style={{ color: 'var(--faint)' }}>{String(i + 1).padStart(2, '0')}</span>
-                    <h3 style={{ marginTop: 'var(--s3)', fontSize: '1.0625rem', letterSpacing: '-0.01em' }}>{f.name}</h3>
-                    <p className="body-mute" style={{ marginTop: 'var(--s2)', fontSize: '0.875rem' }}>{f.desc}</p>
-                  </motion.li>
-                ))}
-              </ul>
-            </RevealGroup>
+        {/* ── Inside — three zones as liquid blobs ──────────── */}
+        <section className="au-band" id="inside">
+          <div className="au-shell">
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-12%' }} style={{ marginBottom: 58, textAlign: 'center' }}>
+              <p className="au-eyebrow">/ 02 — Inside</p>
+              <h2 className="au-h2" style={{ marginTop: 18, marginInline: 'auto', maxWidth: '18ch' }}>
+                Twelve components. <span className="au-grad">174 millimetres.</span>
+              </h2>
+            </motion.div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40 }}>
+              {ZONES.map((z, i) => (
+                <motion.div
+                  key={z.t}
+                  initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-10%' }}
+                  transition={{ duration: 1, ease: EASE, delay: i * 0.14 }}
+                  style={{ textAlign: 'center' }}
+                >
+                  <ParallaxLayer px={px} py={py} depth={12 + i * 6}>
+                    <FilmBlob src={z.src} style={{ aspectRatio: '1', width: '100%', maxWidth: 300, margin: '0 auto' }} scale={1.3} />
+                  </ParallaxLayer>
+                  <h3 className="au-h3" style={{ marginTop: 26 }}>{z.t}</h3>
+                  <p className="au-body" style={{ marginTop: 10, fontSize: '0.9375rem', maxWidth: '30ch', marginInline: 'auto' }}>{z.d}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ textAlign: 'center', marginTop: 58 }}>
+              <Link to="/3d" className="au-btn au-btn-glass">Take the frame apart</Link>
+            </motion.div>
           </div>
         </section>
 
-        {/* ── 04 · Pricing ──────────────────────────────────── */}
-        <section className="band" id="pricing">
-          <div className="shell">
-            <SectionHead eyebrow="/ 04 — Pricing" title="Priced for the people who need it." />
-            <RevealGroup>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))', gap: 'var(--s3)', marginTop: 'var(--s8)', alignItems: 'start' }}>
-                {PRICING.map((p) => (
-                  <motion.div key={p.tier} variants={rise} className={`card ${p.featured ? 'card-live' : ''}`}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--s3)' }}>
-                      <span className="mono" style={{ color: p.featured ? 'var(--accent)' : 'var(--mute)' }}>{p.tier.toUpperCase()}</span>
-                      {p.featured && <span className="tag tag-accent">Most chosen</span>}
-                    </div>
-                    <div style={{ marginTop: 'var(--s5)', display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: '2.5rem', letterSpacing: '-0.04em', lineHeight: 1 }}>{p.price}</span>
-                      <span className="body-mute">{p.suffix}</span>
-                    </div>
-                    <p className="mono" style={{ color: 'var(--faint)', marginTop: 'var(--s2)' }}>{p.per.toUpperCase()}</p>
-                    <ul style={{ listStyle: 'none', marginTop: 'var(--s5)', display: 'flex', flexDirection: 'column', gap: 'var(--s3)' }}>
+        {/* ── Pricing — glass ───────────────────────────────── */}
+        <section className="au-band" id="pricing">
+          <div className="au-shell">
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-12%' }} style={{ marginBottom: 58, textAlign: 'center' }}>
+              <p className="au-eyebrow">/ 03 — Pricing</p>
+              <h2 className="au-h2" style={{ marginTop: 18 }}>Priced for the people who need it.</h2>
+            </motion.div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, alignItems: 'stretch' }}>
+              {PRICING.map((p, i) => (
+                <motion.div
+                  key={p.tier}
+                  initial={{ opacity: 0, y: 54 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE, delay: i * 0.1 }}
+                >
+                  <GlassCard style={{ padding: 34, height: '100%', display: 'flex', flexDirection: 'column', ...(p.hero ? { border: '1px solid rgba(255,107,26,0.42)', boxShadow: '0 30px 90px rgba(255,107,26,0.16)' } : {}) }}>
+                    {p.hero && (
+                      <span className="au-eyebrow" style={{ color: 'var(--au-amber)', marginBottom: 14 }}>Most chosen</span>
+                    )}
+                    <h3 className="au-h3">{p.tier}</h3>
+                    <div style={{ marginTop: 20, fontSize: '2.6rem', fontWeight: 500, letterSpacing: '-0.045em', lineHeight: 1 }}>{p.price}</div>
+                    <p className="au-eyebrow" style={{ marginTop: 10, fontSize: '0.5625rem' }}>{p.per}</p>
+                    <ul style={{ listStyle: 'none', marginTop: 26, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
                       {p.feats.map((f) => (
-                        <li key={f} style={{ display: 'flex', gap: 'var(--s3)', alignItems: 'flex-start', fontSize: '0.875rem', color: 'var(--body)' }}>
-                          <span aria-hidden="true" style={{ color: 'var(--accent)', lineHeight: 1.5 }}>—</span>{f}
+                        <li key={f} style={{ display: 'flex', gap: 11, fontSize: '0.875rem', color: 'var(--au-body)' }}>
+                          <span aria-hidden="true" style={{ color: 'var(--au-amber)' }}>—</span>{f}
                         </li>
                       ))}
                     </ul>
-                    <Link to="/signup" className={`btn ${p.featured ? 'btn-accent' : 'btn-outline'}`} style={{ marginTop: 'var(--s6)', width: '100%' }}>
+                    <Link to="/signup" className={`au-btn ${p.hero ? 'au-btn-primary' : 'au-btn-glass'}`} style={{ marginTop: 30, width: '100%' }}>
                       Choose {p.tier}
                     </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </RevealGroup>
+                  </GlassCard>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── 05 · FAQ ──────────────────────────────────────── */}
-        <section className="band" id="faq">
-          <div className="shell" style={{ maxWidth: 860 }}>
-            <SectionHead eyebrow="/ 05 — Questions" title="Answers." />
-            <div style={{ marginTop: 'var(--s8)', borderTop: '1px solid var(--hairline)' }}>
+        {/* ── FAQ ───────────────────────────────────────────── */}
+        <section className="au-band">
+          <div className="au-shell" style={{ maxWidth: 880 }}>
+            <motion.h2 className="au-h2" variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ marginBottom: 44 }}>
+              Answers.
+            </motion.h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {FAQS.map((f, i) => {
                 const open = openFaq === i;
                 return (
-                  <div key={f.q} style={{ borderBottom: '1px solid var(--hairline)' }}>
-                    <h3>
+                  <motion.div
+                    key={f.q}
+                    className="au-glass"
+                    initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ duration: 0.7, ease: EASE, delay: i * 0.05 }}
+                    style={{ borderRadius: 22 }}
+                  >
+                    <h3 style={{ margin: 0 }}>
                       <button
                         onClick={() => setOpenFaq(open ? null : i)}
                         aria-expanded={open}
                         style={{
-                          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          gap: 'var(--s4)', padding: 'var(--s5) 0', background: 'none', border: 0, cursor: 'pointer',
-                          color: open ? 'var(--ink)' : 'var(--body)', fontFamily: 'var(--font)', fontSize: '1rem',
-                          textAlign: 'left', transition: 'color var(--t-micro) var(--ease)',
+                          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20,
+                          padding: '22px 26px', background: 'none', border: 0, cursor: 'pointer',
+                          color: 'var(--au-ink)', fontSize: '1rem', fontWeight: 500, textAlign: 'left', fontFamily: 'inherit',
                         }}
                       >
                         {f.q}
-                        <span aria-hidden="true" className="mono" style={{ color: 'var(--accent)', flex: 'none', transform: open ? 'rotate(45deg)' : 'none', transition: 'transform var(--t-element) var(--ease)' }}>+</span>
+                        <span aria-hidden="true" style={{ color: 'var(--au-amber)', flex: 'none', fontSize: '1.3rem', lineHeight: 1, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 500ms var(--au-ease)' }}>+</span>
                       </button>
                     </h3>
                     <AnimatePresence initial={false}>
                       {open && (
                         <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.34, ease: EASE }}
-                          style={{ overflow: 'hidden' }}
+                          initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.45, ease: EASE }} style={{ overflow: 'hidden' }}
                         >
-                          <p className="body-mute" style={{ paddingBottom: 'var(--s5)', maxWidth: '68ch', fontSize: '0.9375rem' }}>{f.a}</p>
+                          <p className="au-body" style={{ padding: '0 26px 24px', fontSize: '0.9375rem', maxWidth: '66ch' }}>{f.a}</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           </div>
         </section>
 
-        {/* ── Close ─────────────────────────────────────────── */}
-        {/* Network (scene 5) sits behind the final CTA — the Echo Network as a
-            city rather than a diagram. The vignette in AmbientVideo is what
-            keeps the type legible over it. */}
-        <section className="band" style={{ position: 'relative', overflow: 'hidden', minHeight: '72vh', display: 'flex', alignItems: 'center' }}>
-          <AmbientVideo src={MEDIA.network} />
-          <div className="shell" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            <motion.h2 className="display-lg" variants={rise} initial="hidden" whileInView="visible" viewport={inView} style={{ margin: '0 auto', maxWidth: '18ch' }}>
-              Sight is not the only way to see.
+        {/* ── Close — the forge as light ────────────────────── */}
+        <section className="au-band" style={{ position: 'relative', overflow: 'hidden' }}>
+          <FilmGlow src={MEDIA.network} opacity={0.6} blur={54} />
+          <div className="au-shell" style={{ position: 'relative', textAlign: 'center' }}>
+            <motion.h2 className="au-h2" variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ marginInline: 'auto', maxWidth: '17ch' }}>
+              Sight is not the only way to <span className="au-grad">see</span>.
             </motion.h2>
-            <Reveal delay={0.1}>
-              <div style={{ display: 'flex', gap: 'var(--s3)', justifyContent: 'center', marginTop: 'var(--s7)', flexWrap: 'wrap' }}>
-                <Link to="/signup" className="btn btn-accent btn-lg">Get ARGES</Link>
-                <Link to="/3d" className="btn btn-outline btn-lg">See how it works</Link>
-              </div>
-            </Reveal>
+            <motion.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ display: 'flex', gap: 14, justifyContent: 'center', marginTop: 44, flexWrap: 'wrap' }}>
+              <Link to="/signup" className="au-btn au-btn-primary">Get ARGES</Link>
+              <Link to="/3d" className="au-btn au-btn-glass">See how it works</Link>
+            </motion.div>
           </div>
         </section>
       </main>
 
-      <SiteFooter />
-    </>
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '54px 0 40px', position: 'relative' }}>
+        <div className="au-shell" style={{ display: 'flex', justifyContent: 'space-between', gap: 26, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Logo size={20} color="var(--au-amber)" />
+            <span style={{ letterSpacing: '-0.02em' }}>ARGES</span>
+          </div>
+          <nav aria-label="Footer" style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
+            {[['/3d', 'How it works'], ['/family', 'Family'], ['/helper', 'Echo Network'], ['/admin', 'Admin'], ['/login', 'Sign in']].map(([to, l]) => (
+              <Link key={to} to={to} style={{ color: 'var(--au-mute)', textDecoration: 'none', fontSize: '0.8125rem' }}>{l}</Link>
+            ))}
+          </nav>
+          <span className="au-eyebrow" style={{ fontSize: '0.5625rem' }}>© 2026 · Thiagarajar Polytechnic, Salem</span>
+        </div>
+      </footer>
+    </div>
   );
 }

@@ -16,7 +16,7 @@
  */
 
 /**
- * The `?v=3` suffixes are cache-busting. Chrome serves videos from its media
+ * The `?v=4` suffixes are cache-busting. Chrome serves videos from its media
  * cache even across hard refreshes (range requests bypass reload logic), so
  * after replacing the clips on disk the URL must change to force every
  * browser to fetch the new bytes. Bump the version whenever media is
@@ -24,7 +24,7 @@
  */
 export const MEDIA = {
   /** Scene 1 · 8s · /3d Act I. Scroll-scrubbed; must end pushing into the temple. */
-  hero: '/media/arges-hero.mp4?v=3',
+  hero: '/media/arges-hero.mp4?v=4',
 
   /**
    * The hero's own first frame, extracted with ffmpeg.
@@ -36,19 +36,19 @@ export const MEDIA = {
    * with:
    *   ffmpeg -i arges-hero.mp4 -frames:v 1 -q:v 4 arges-hero-poster.jpg
    */
-  heroPoster: '/media/arges-hero-poster.jpg?v=3',
+  heroPoster: '/media/arges-hero-poster.jpg?v=4',
 
   /** Scene 2 · 8s · /3d, between the teardown and the pipeline. Abstract light. */
-  signal: '/media/arges-signal.mp4?v=3',
+  signal: '/media/arges-signal.mp4?v=4',
 
   /** Scene 3 · 8s · Landing, under the hero. The human moment. */
-  morning: '/media/arges-morning.mp4?v=3',
+  morning: '/media/arges-morning.mp4?v=4',
 
   /** Scene 4 · 6s · Landing, inside the teardown teaser. Haptic macro. */
-  contact: '/media/arges-contact.mp4?v=3',
+  contact: '/media/arges-contact.mp4?v=4',
 
   /** Scene 5 · 8s · Landing, behind the closing CTA. City at dusk. */
-  network: '/media/arges-network.mp4?v=3',
+  network: '/media/arges-network.mp4?v=4',
 
   /**
    * Scenes 6–8 · /3d teardown backdrops, one per zone.
@@ -59,7 +59,7 @@ export const MEDIA = {
    * middle of frame it will fight the diagram; lower the layer opacity in
    * HowItWorks3D rather than regrading the schematic.
    */
-  templeLeft:  '/media/arges-temple-left.mp4?v=3',
-  templeFront: '/media/arges-temple-front.mp4?v=3',
-  templeRight: '/media/arges-temple-right.mp4?v=3',
+  templeLeft:  '/media/arges-temple-left.mp4?v=4',
+  templeFront: '/media/arges-temple-front.mp4?v=4',
+  templeRight: '/media/arges-temple-right.mp4?v=4',
 } as const;

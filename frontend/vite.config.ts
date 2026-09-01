@@ -27,7 +27,6 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'react-vendor'
             if (id.includes('framer-motion')) return 'animation'
-            if (id.includes('three')) return 'three'
             if (id.includes('leaflet')) return 'maps'
           }
         },

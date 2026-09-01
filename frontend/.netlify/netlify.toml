@@ -7,10 +7,10 @@ plugins = []
 [functions."*"]
 
 [build]
-publish = "C:\\Users\\Devesh B\\OneDrive\\Documents\\DEVESH\\Main project\\arges-platform\\frontend\\dist"
+publish = "C:\\Users\\Devesh B\\OneDrive\\Documents\\DEVESH\\Main project\\arges-platform\\.claude\\worktrees\\obsidian-redesign\\frontend\\dist"
 publishOrigin = "config"
 commandOrigin = "config"
-base = "C:\\Users\\Devesh B\\OneDrive\\Documents\\DEVESH\\Main project\\arges-platform\\frontend"
+base = "C:\\Users\\Devesh B\\OneDrive\\Documents\\DEVESH\\Main project\\arges-platform\\.claude\\worktrees\\obsidian-redesign\\frontend"
 command = "npm run build"
 
 [build.environment]

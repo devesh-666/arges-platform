@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Cursor } from './components/Cursor';
+import { IntroSplash } from './components/IntroSplash';
 import { Landing } from './pages/Landing';
 
 // Lazy load all pages except Landing (first paint)
@@ -25,6 +26,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Cursor />
+      <IntroSplash />
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<Landing />} />

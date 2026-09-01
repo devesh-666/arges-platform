@@ -123,14 +123,21 @@ export function SectionHead({ eyebrow, title, lead, className = '' }: {
   );
 }
 
-/** The ARGES mark. Single path set, so it stays consistent everywhere. */
-export function Logo({ size = 26, color = 'var(--accent)' }: { size?: number; color?: string }) {
+/** The ARGES mark — the bolt+eye emblem from the official logo
+ * (assets/Arges_logo.png, background-removed variant). Icon only; wordmarks
+ * render as text next to it, so the mark stays legible at nav sizes.
+ *
+ * The emblem is wider than tall (512×358), so `size` is a HEIGHT — sizing
+ * by width shrank it to ~17px beside 17px type and the mark read as an
+ * afterthought instead of the brand. */
+export function Logo({ size = 26 }: { size?: number; color?: string }) {
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden="true" focusable="false">
-      <path d="M50 28 C28 28 14 50 14 50 C14 50 28 72 50 72 C72 72 86 50 86 50 C86 50 72 28 50 28 Z"
-        stroke={color} strokeWidth="3" fill="none" />
-      <circle cx="50" cy="50" r="9" stroke={color} strokeWidth="3" fill="none" />
-      <circle cx="50" cy="50" r="3.5" fill={color} />
-    </svg>
+    <img
+      src="/logo-mark.png"
+      alt=""
+      height={size}
+      aria-hidden="true"
+      style={{ height: size, width: 'auto', display: 'block' }}
+    />
   );
 }

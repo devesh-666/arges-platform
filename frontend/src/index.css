@@ -4,6 +4,11 @@
    Obsidian is the whole design system — see obsidian.css for the rules. */
 @import "./obsidian.css";
 
+/* Aurora is the landing page only, scoped under `.aurora`. Two systems coexist
+   deliberately: the marketing surface is a spectacle, /3d and the dashboards
+   stay on Obsidian's restraint. */
+@import "./aurora.css";
+
 @layer components {
   /* Declared in the components layer so Tailwind utilities on the same
      element still win (a plain unlayered rule would outrank them). */
